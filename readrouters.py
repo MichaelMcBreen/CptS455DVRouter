@@ -155,16 +155,17 @@ def readlinks(testname, router):
     
 
 
-def setupscript(testdirname, poption):
+def setupscript(testdirname,routername, poption):
     print '----ENTERING Set-Up Script-----'
     table = {}
     table = readrouters(testdirname)
     #for r in table:
         #print table['A']
-    dvsimulator(poption,'test1','A')
+    dvsimulator(poption,testdirname,routername)
 
 
 #readrouters('test1')
 #dvsimulator('hey','hey','hey')
-setupscript('test1', '-d');
+if __name__ == "__main__":
+	setupscript(sys.argv[1], sys.argv[2],sys.argv[3] );
 
