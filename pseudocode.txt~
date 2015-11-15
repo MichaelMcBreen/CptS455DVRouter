@@ -1,0 +1,20 @@
+setupscript testdirname [-p option] - QUANG
+    - call readrouters
+    - call DVsimulator for each router
+
+DVsimulator [-p option] testdirname routername
+    - create output file (ex: routername.output)                    - QUANG
+    - call readrouters to grab address and port to setup sockets    - QUANG
+		-save the socket in a dictionary with the (baseport + offset)
+
+    - call readlink based on the routername                         - QUANG
+       (ex: DVtable = readlinks(testdirname, routername) )
+        - grab DVtable info stored as a dictionary                  - QUANG
+    
+    - select returns a list of available ports                      - BEN
+        - get list of ports we can receive from and send to
+        - finds if there is data to read from ports and reads
+        - for each port that we read from, call updaterouterDVtable()
+            - DVtable algorithm updates routername DVtable          - Michael
+
+        - send update DVtable to all neighbors
