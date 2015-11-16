@@ -107,7 +107,7 @@ def dvsimulator(argv):
     f.close()
     
     print ('Creating Sockets . . .')
-    baseInputs, inputs, outputs, toConnInputs, toConnOutputs = create_sockets(routerName, rtrTable, linkTable)
+    inputs, outputs, toConnInputs, toConnOutputs = create_sockets(routerName, rtrTable, linkTable)
     print ('Connecting Sockets . . .')
     connect_sockets(rtrTable, linkTable, inputs, outputs, toConnInputs, toConnOutputs)
 
@@ -147,22 +147,16 @@ def create_sockets(routerName, rtrTable, linkTable):
 
     toConnInputs = []
     toConnOutputs = []
-    baseInputs = {}
     inputs = {}
     outputs = {}
 
-    # do we need these bSockets? when are they used?
-    # I DON'T KNOW WHY THIS PRODUCES A SYNTAX ERROR ON LISTEN
-    
     bFD = rtrTable[routerName].baseport
     bSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     bSocket.bind((rtrTable[routerName].host, bFD))
     bSocket.listen(10)
-    baseInputs[routerName] = bSocket
-    
+    inputs[routerName] = bSocket    
 
     for rName in linkTable:
-
         # router's base + locallink
         iFD = rtrTable[routerName].baseport + linkTable[rName].locallink
         iSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -179,14 +173,13 @@ def create_sockets(routerName, rtrTable, linkTable):
         inputs[rName] = iSocket
         outputs[rName] = oSocket
 
-    return  baseInputs, inputs, outputs, toConnInputs, toConnOutputs
+    return  inputs, outputs, toConnInputs, toConnOutputs
 
 def connect_sockets(rtrTable, linkTable, inputs, outputs, toConnInputs, toConnOutputs):
     print("--------inside connect_sockets()")
     print ('inputs : ', inputs)
     print ('outputs: ', outputs)
     while len(toConnInputs) + len(toConnOutputs) > 0:
-
         for oName in toConnOutputs:
             try:
                 outputs[oName].connect((rtrTable[oName].host, rtrTable[oName].baseport + linkTable[oName].remotelink))
@@ -194,20 +187,15 @@ def connect_sockets(rtrTable, linkTable, inputs, outputs, toConnInputs, toConnOu
                 toConnOutputs.remove(oName)
             except socket.error:
                 pass
-
         # passing dictionary inputs, outputs - do dictionaries work?
         rReady, wReady, eReady = select.select(list(inputs.values()), list(outputs.values()), [])
         
-        #print("read  : ", rReady)
-        #print("write : ", wReady)
-
         for iSock in rReady:
             for iName in inputs:
                 if inputs[iName] == iSock:
                     inputs[iName].accept()
                     print("Input Connected : ", iName)
                     toConnInputs.remove(iName)
-
 
 def printFDList(socketDict, servSock):
     print("printing sockets")
