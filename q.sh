@@ -5,9 +5,9 @@ routers[2] = "C"
 routers[3] = "D"
 routers[4] = "E"
 
-python readrouters.py test1 A qoption
-python readrouters.py test1 B qoption
-python readrouters.py test1 C qoption
-python readrouters.py test1 D qoption
-python readrouters.py test1 E qoption
-
+for i in {0..5}
+do
+	echo "python router $1 $2 routers[i]"
+	# pass -p testdir routername
+	python router $1 $2 routers[i] 
+done
