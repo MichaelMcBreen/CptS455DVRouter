@@ -5,8 +5,7 @@ setupscript testdirname [-p option] - QUANG
 DVsimulator [-p option] testdirname routername
     - create output file (ex: routername.output)                    - QUANG
     - call readrouters to grab address and port to setup sockets    - QUANG
-		-save the socket in a dictionary with the (baseport + offset(fd))
-		-key by fd and tupple {socket, routername}
+		-save the socket in a dictionary with the (baseport + offset)
 
     - call readlink based on the routername                         - QUANG
        (ex: DVtable = readlinks(testdirname, routername) )
