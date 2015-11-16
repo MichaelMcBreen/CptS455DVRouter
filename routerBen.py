@@ -111,7 +111,6 @@ def dvsimulator(argv):
     print ('Connecting Sockets . . .')
     connect_sockets(rtrTable, linkTable, inputs, outputs, toConnInputs, toConnOutputs)
 
-"""
     while 1:
         start = time.time()
         print("Looping at time: ", start)
@@ -140,7 +139,6 @@ def dvsimulator(argv):
         # updates sent every 30 seconds
         t = 30 - end + start
         if t >= 0 and t < 30: time.sleep(t)
-"""
 
 # makes sockets
 def create_sockets(routerName, rtrTable, linkTable):
@@ -155,19 +153,20 @@ def create_sockets(routerName, rtrTable, linkTable):
 
     # do we need these bSockets? when are they used?
     # I DON'T KNOW WHY THIS PRODUCES A SYNTAX ERROR ON LISTEN
-    """
+    
     bFD = rtrTable[routerName].baseport
     bSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    bSocket.bind((rtrTable[rName].host, bFD)
+    bSocket.bind((rtrTable[routerName].host, bFD))
     bSocket.listen(10)
-    bInputs[rName] = bSocket
-    """
+    baseInputs[routerName] = bSocket
+    
 
     for rName in linkTable:
 
         # router's base + locallink
         iFD = rtrTable[routerName].baseport + linkTable[rName].locallink
         iSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        iSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         iSocket.bind((rtrTable[rName].host, iFD))
         iSocket.listen(5)
         toConnInputs.append(rName)
@@ -175,7 +174,6 @@ def create_sockets(routerName, rtrTable, linkTable):
         # remote's base + remotelink
         oFD =  rtrTable[rName].baseport + linkTable[rName].remotelink
         oSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        oSocket.bind((rtrTable[rName].host, oFD))
         toConnOutputs.append(rName)
 
         inputs[rName] = iSocket
