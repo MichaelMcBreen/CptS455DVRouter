@@ -163,7 +163,9 @@ def create_sockets(routerName, rtrTable, linkTable):
         # router's base + locallink
         iFD = rtrTable[routerName].baseport + linkTable[rName].locallink
         iSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        iSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        # iSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        
+        iSocket.setblocking(False)
         iSocket.bind((rtrTable[rName].host, iFD))
         iSocket.listen(5)
         toConnInputs.append(rName)
