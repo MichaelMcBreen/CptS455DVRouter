@@ -155,6 +155,8 @@ def create_sockets(routerName, rtrTable, linkTable):
 
     bFD = rtrTable[routerName].baseport
     bSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    bSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    bSocket.setblocking(False)
     bSocket.bind((rtrTable[routerName].host, bFD))
     bSocket.listen(10)
     inputs[routerName] = bSocket    
@@ -163,8 +165,7 @@ def create_sockets(routerName, rtrTable, linkTable):
         # router's base + locallink
         iFD = rtrTable[routerName].baseport + linkTable[rName].locallink
         iSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # iSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        
+        iSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         iSocket.setblocking(False)
         iSocket.bind((rtrTable[rName].host, iFD))
         iSocket.listen(5)
