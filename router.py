@@ -115,7 +115,7 @@ def dvsimulator(argv):
         start = time.time()
         print("Looping at time: ", start)
         
-        rReady, wReady, eReady = select.select(inputs, outputs, inputs, 20)
+        rReady, wReady, eReady = select.select(list(inputs.values()), list(outputs.values()), list(inputs.values()))
 
         # timeout handling
         if len(rReady) == 0:
@@ -125,14 +125,17 @@ def dvsimulator(argv):
             for iName in rReady:
                 # read all data in socket and parse messages
                 data = readAll(s)
+                print('MSG : ', data)
                 messages = msgSplit(data)
                 for m in messages:
                     DVUpdateMessage(servSock[s], m)
         # send updated DVtable to all available neighbors
         for s in wReady:
             # needs to modify for poison and specific messages
-            data = BuildUMessage()
-            s.send(data)
+            # data = BuildUMessage()
+            print('UMSG : ', 'Hello World')
+            # send takes a BYTES object not STR
+            s.send(b'Hello World')
         
         end = time.time()
 
