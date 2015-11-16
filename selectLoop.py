@@ -47,13 +47,10 @@ def msgSplit(data):
 while 1:
 	start = time.time()
 	
-	rReady, wReady, eReady = select.select(readFDs, writeFDs, exceptFDs, 0);
+	rReady, wReady, eReady = select.select(readFDs, writeFDs, exceptFDs, 20)
 
-	# error handling
-	if len(rReady) < 0:
-		print "Select Error: failed to select available sockets\n"	# error handling????
 	# timeout handling
-	elif len(rReady) == 0:
+	if len(rReady) == 0:
 		print "Timeout Error: No available sockets"
 	# read available messages
 	else:
@@ -64,11 +61,18 @@ while 1:
 			for m in messages:
 				DVUpdateMessage(servSock[fd][1], m)
 	# send updated DVtable to all available neighbors
-	for fd in writeFDs:
+	for fd in wReady:
 		servSock[fd][0].send(data)
 	
+	FD_ZERO(rReady)
+	FD_ZERO(wReady)
+	FD_ZERO(eReady)
 	end = time.time()
+
 	# updates sent every 30 seconds
-	time.sleep(30 - end + start)
+	t = 30 - end + start
+	if t >= 0 and t < 30: time.sleep(t)
+
+
 
 
