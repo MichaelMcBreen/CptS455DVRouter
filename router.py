@@ -37,9 +37,9 @@ def readrouters(testname):
     f.close()
     #print table.get('A')
     for x in table:
-        print "router info: "
+        print ("router info: ")
         attrs = vars(table[x])
-        print ', '.join("%s: %s" % item for item in attrs.items())
+        print (', '.join("%s: %s" % item for item in attrs.items()))
              
     return table
 
@@ -59,7 +59,10 @@ def FD_CLR (fd, setFDs):
 
 # returns 1 if fd is in the set, 0 if not
 def FD_ISSET (fd, setFDs):
-    return fd in setFDs? 1 : 0
+    if(fd in setFDs):
+        return 1
+    else:
+        return 0
 
 def readAll(sock):
     data = []
@@ -81,82 +84,117 @@ def msgSplit(data):
         i = j
     return messages
 
-def dvsimulator(poption, testdirame, routerame):
+def main(argv):
+    dvsimulator(argv)
+
+def dvsimulator(argv):
+    print("I am working", argv)
+    testDirName = "Test1"
+    routerName = "A"
+    poption = False
+    if(len(argv) == 3):
+        poption = True
+        testDirName = argv[3]
+        routerName = argv[4]
+    else:
+        poption = False
+        testDirName = argv[2]
+        routerName = argv[3]
+    print(poption, testDirName, routerName)
     readFDs = []
     writeFDs = []
+    toWriteFDs = []
     exceptFDs = []
     servSock =  {}
     rlTable = {}
-    print 'calling readrouters(testdirame)'
-    table = readrouters(testdirame)
+    print ('calling readrouters(testDirName)')
+    table = readrouters(testDirName)
     dvtable = {}
-    print '----ENTERING dvsimulator-----'
-    print "poption : "+ poption
-    print "testdirame : "+ testdirame
-    print "routerame : "+ routerame
+    print ('----ENTERING dvsimulator-----')
+    print ("poption : "+ str(poption))
+    print ("testDirName : "+ testDirName)
+    print ("routerName : "+ routerName)
     #open up output file to log
-    f = open(routerame + ".output", 'w')
+    f = open(routerName + ".output", 'w')
     f.close()
-    print '------------------------------------------------------------------>hey'
-    mybaseport = table.get(routerame).baseport
-    print table.get(routerame).baseport
+    print ('------------------------------------------------------------------>hey')
+    mybaseport = table.get(routerName).baseport
+    print (table.get(routerName).baseport)
     #we should set up the baseport to listen
-    servSock[table.get(routerame).baseport] =ServSockInfo((makelisten(table.get(routerame).host, table.get(routerame).baseport)), mybaseport)
+    servSock[table.get(routerName).baseport] = ServSockInfo((makelisten(table.get(routerName).host, table.get(routerName).baseport)), mybaseport)
     #making router listen on its baseport
     #servSock["q"] =ServSockInfo("9000",mybaseport)
-    print '------------------------------------------------------------------>baseport'
-    print servSock.get(mybaseport).socket
-    rlTable = readlinks(testdirame,routerame)
+    print ('------------------------------------------------------------------>baseport')
+    print (servSock.get(mybaseport).socket)
+    rlTable = readlinks(testDirName,routerName)
 
     for neighbor in rlTable:
-        print 'neighbor[0] = '+neighbor[0]
-        myreadfds = table.get(routerame).baseport + rlTable.get(neighbor[0]).locallink
+        print ('neighbor[0] = '+neighbor[0])
+        myreadfds = table.get(routerName).baseport + rlTable.get(neighbor[0]).locallink
         mywritefds = table.get(neighbor[0]).baseport + rlTable.get(neighbor[0]).remotelink
-        print 'myreadfds: '+ str(mywritefds)
+        print ('myreadfds: '+ str(mywritefds))
         #for each link in our read link table
             #make listen for our locallink
             #make socket for our outgoing link
         #save FDS into read FDs    
-        readFDs.append(myreadfds) 
         #tell it to listen by on the offset
-        print 'creating socket and bind with incoming port and set it to listen...'   
-        servSock[myreadfds] = ServSockInfo(makelisten(table.get(routerame).host, myreadfds), table.get(routerame).baseport)
-        print 'successfully created socket for listening'  
+        print ('creating socket and bind with incoming port and set it to listen...')
+        tempSocket = makelisten(table.get(routerName).host, myreadfds)
+        servSock[tempSocket] = neighbor, "R"
+        readFDs.append(tempSocket) 
+        print ('successfully created socket for listening')  
         #save socket into servSock dict with FDS as key and socket and output FDs are stored
 
         #save outgoing fds into writeFDs
-        writeFDs.append(mywritefds)
         #now creating outgoing sockets
-        print 'creating socket and bind with outgoing port...'
-        servSock[mywritefds]  = ServSockInfo(makesend(table.get(neighbor[0]).host, mywritefds),table.get(neighbor[0]).baseport)
-        print 'successfully return outgoing socket...'
-
-        for x in readFDs:
-            print 'read key : '+ str(x) + ' baseport : '+str(servSock[x].baseport)
-        for x in writeFDs:
-            print 'write key : '+ str(x) + ' baseport : '+str(servSock[x].baseport)
+        print ('creating socket and bind with outgoing port...')
+        tempSocket, outCome = makesend(table.get(neighbor[0]).host, mywritefds)
+        if(outCome == True):
+            writeFDs.append(tempSocket)
+            servSock[tempSocket]  = neighbor, "W"
+        else:
+            toWriteFDS.append((table.get(neighbor[0]).host, mywritefds, neighbor))
+        print ('successfully return outgoing socket...')
     # map read socket fds to read socket names in a dictionary
     # assuming we have servSock[]
 
     while 1:
         start = time.time()
+        print("Looping at time: ", start)
+        print("printing reads")
+        printFDList(readFDs, servSock)
+        print("printing write")
+        printFDList(writeFDs, servSock)
         
         rReady, wReady, eReady = select.select(readFDs, writeFDs, exceptFDs, 20)
 
+        #try to connect to read sockets that we could not earlier
+        print("Making write sockets again...")
+        for trySocket in toWriteFDs:
+            print(trySocket[0], trySocket[1], trySocket[2])
+            tempSocket, outCome = makesend(trySocket[0], trySocket[1])
+            if(outCome == True):
+                print("worked")
+                writeFDs.append(tempSocket)
+                servSock[mywritefds]  = trySocket[2], "W"
+                toWriteFDs.remove(trySocket)
+        
         # timeout handling
         if len(rReady) == 0:
-            print "Timeout Error: No available sockets"
+            print ("Timeout Error: No available sockets")
         # read available messages
         else:
-            for fd in rReady:
+            for s in rReady:
                 # read all data in socket and parse messages
-                data = readAll(servSock[fd][0])
+                data = readAll(s)
                 messages = msgSplit(data)
                 for m in messages:
-                    DVUpdateMessage(servSock[fd][1], m)
+                    DVUpdateMessage(servSock[s], m)
         # send updated DVtable to all available neighbors
-        for fd in wReady:
-            servSock[fd][0].send(data)
+        for s in wReady:
+            # needs to modify for poison and specific messages
+            data = BuildUMessage()
+            s.send(data)
         
         FD_ZERO(rReady)
         FD_ZERO(wReady)
@@ -167,58 +205,112 @@ def dvsimulator(poption, testdirame, routerame):
         t = 30 - end + start
         if t >= 0 and t < 30: time.sleep(t)
 
-
-
 def makelisten(host, port):
-    print '----ENTERING MAKELISTEN Script-----'
-    print 'host: ' + host
+    print ('----ENTERING MAKELISTEN Script-----')
+    print ('host: ' + host)
 
-    print 'port: ' + str(port)
+    print ('port: ' + str(port))
 
     try:
         #create an AF_INET, STREAM socket (TCP)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    except socket.error, msg:
-        print 'Failed to create socket. Error code: ' + str(msg[0]) + ' , Error message : ' + msg[1]
-        sys.exit();
+    except socket.error:
+        print ('Failed to create socket. Error code:')
+        #sys.exit();
      
-    print 'Socket Created'
-
+    print ('Socket Created')
     try:
         s.bind((host,port))
-    except socket.error , msg:
-        print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
-        sys.exit()
+    except socket.error:
+        print ('Bind failed. Error Code :1', socket.error)
+        #sys.exit()
          
-    print 'Socket bind complete'
+    print ('Socket bind complete')
     s.listen(10)
-    print 'Socket now listening'
+    print ('Socket now listening')
     return s
 
     #not sure what else to do as we didn't know how to listen or talk ect...
 
+""" original code
+def connect_all():
+
+    print("enter connectALL")
+
+    while unconnected_inputs or unconnected_outputs:
+
+        for i in unconnected_outports:
+            try:
+                outputs[i].connect(address_out[i])
+                print("connecect", i)
+                unconnected_outputs.remove(i)
+            expect socket.error:
+                pass
+
+        readable, writeable, exoectional = select.select(inputs.values(), outputs.values, inputs.values())
+
+        for s in readable:
+            for i in unconeected_inputs:
+                if s in in inputs[s]:
+                    inputs[i], adrl = s.acept()
+                    print accpeted
+                    unconnected_inputs.remove(i)
+"""
+
+def connect_all(servSock, connections, readS, writeS, toRead, toWrite):
+    print("enter connectALL")
+    while toRead or toWrite:
+
+        for s in toWrite:
+            try:
+                s.connect(servSock.host, servSock.port)
+                print("write connected", servSock.port)
+                toWrite.remove(s)
+            expect socket.error:
+                pass
+        rReady, wReady, eReady = select.select(readS, writeS, [])
+        for s in rReady:
+            for i in toRead:
+                if s is in readS:
+                    s.accept()
+                    conn, sock = s.accept()
+                    print("read connected", servSock.port)
+                    toRead.remove(i)
+                    connections.append(conn)
+
+
+def create_connections():
+    #initalize address_in/out, unconnected inputs/ output dictionaries
+
+    #create outputs as a dict of name L 
+
+
+def printFDList(socketDict, servSock):
+    print("printing sockets")
+    for entry in socketDict:
+        print(entry, servSock[entry])
+
 def makesend(host, port):
-    bytes = random._urandom(1024)
-    print '----ENTERING MAKESEND Script-----'
-    print 'host: ' + host
-    print 'port: ' + str(port)
+    print ('----ENTERING MAKESEND Script-----')
+    print ('host: ' + host)
+    print ('port: ' + str(port))
     try:
         #create an AF_INET, STREAM socket (TCP)
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    except socket.error, msg:
-        print 'Failed to create socket. Error code: ' + str(msg[0]) + ' , Error message : ' + msg[1]
-        sys.exit();
+    except socket.error:
+        print ('Failed to create socket. Error code:')
+        return s, False
      
-    print 'Socket Created'
+    print ('Socket Created')
     try:
         s.bind((host,port))
-    except socket.error , msg:
-        print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
-        sys.exit()
+    except socket.error:
+        print("ERROR would not bind")
+       return s, False
          
-    print 'Socket bind complete'
+    print ('Socket bind complete')
 
-    return s
+    return s, True
 
 
 
@@ -228,11 +320,10 @@ def readlinks(testname, router):
     table = {}
     for line in lines:
         if line[0]=='#': continue
-        words = string.split(line)
+        words = line.split(" ")
         table[words[0]] = LinkInfo(int(words[1]), int(words[2]), int(words[3]))
     f.close()
     return table
-
 
 def PrintRoutingTable(Table):
     ##prints top label for table
@@ -329,21 +420,6 @@ def PrintDestination(Destination):
         print(entry,RouterTable[Destination][entry], end=" ")
     print()
 
-
-
-def setupscript(testdirname,routername, poption):
-    print '----ENTERING Set-Up Script-----'
-    table = {}
-    table = readrouters(testdirname)
-    #for r in table:
-        #print table['A']
-    dvsimulator(poption,testdirname,routername)
-
-
-
-
-
-
-
+#Calls DVSimulator with cmd argv
 dvsimulator(sys.argv)
     

@@ -9,5 +9,5 @@ for i in {0..5}
 do
 	echo "python router $1 $2 routers[i]"
 	# pass -p testdir routername
-	python router $1 $2 routers[i] 
+	py router $2 $3 routers[i] 
 done
