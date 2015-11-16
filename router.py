@@ -125,7 +125,7 @@ def dvsimulator(argv):
             for iName in rReady:
                 # read all data in socket and parse messages
                 data = readAll(s)
-                print('MSG : ', data)
+                print('Recv : ', data)
                 messages = msgSplit(data)
                 for m in messages:
                     DVUpdateMessage(servSock[s], m)
@@ -133,7 +133,7 @@ def dvsimulator(argv):
         for s in wReady:
             # needs to modify for poison and specific messages
             # data = BuildUMessage()
-            print('UMSG : ', 'Hello World')
+            print('Send : ', 'Hello World')
             # send takes a BYTES object not STR
             s.send(b'Hello World')
         
@@ -198,8 +198,9 @@ def connect_sockets(rtrTable, linkTable, inputs, outputs, toConnInputs, toConnOu
         for iSock in rReady:
             for iName in inputs:
                 if inputs[iName] == iSock:
-                    inputs[iName].accept()
+                    sock, addr = inputs[iName].accept()
                     print("Input Connected : ", iName)
+                    inputs[iName] = sock
                     toConnInputs.remove(iName)
 
 def printFDList(socketDict, servSock):
