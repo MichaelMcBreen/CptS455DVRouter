@@ -11,7 +11,7 @@ class LinkInfo:
 RouterTable = {} #Dictionary of Dictionary
 RouterList = ["A", "B", "C", "D"]
 SelfName = "A"
-
+PosionReverse = True
 #used to run all tests
 def Test():
     passed = 0
@@ -48,50 +48,22 @@ def TestUMessageNoChange():
     DVUpdateMessage("B","U A 3 B 0 C 2 D 7")
     DVUpdateMessage("C","U A 5 B 2 C 0 D 5")
     SendUMessage()
+    ParseMessage("P")
+    ParseMessage("P C")
+    ParseMessage("L C 5")
+    PrintRoutingTable(RouterTable)
+    SendUMessage()
     if(AssertRouterTable(TestTable)):
         print("TestUMessageNoChange Passed")
         return True
     else:
         print("TestUMessageNoChange Failed")
         return False
-    
-def TestUMessageNextHop():
-    RouterTable.clear()
-    RouterTable["A"] = {"A": 0,"B" : 64,"C": 64, "D": 64}
-    RouterTable["B"] = {"A":64,"B" : 3,"C": 64, "D": 64}
-    RouterTable["C"] = {"A":64,"B": 64,"C": 23, "D": 64}
-    RouterTable["D"] = {"A":64,"B": 64, "C": 64, "D" : 64}
-    DVUpdateMessage("B","U A 3 B 0 C 2 D 64")
-    TestTable = {}
-    TestTable["A"] = {"A": 0,"B" : 64,"C": 64, "D": 64}
-    TestTable["B"] = {"A":64,"B" : 3,"C": 25, "D": 64}
-    TestTable["C"] = {"A":64,"B": 5,"C": 23, "D": 64}
-    TestTable["D"] = {"A":64,"B": 64, "C": 28, "D" : 64}
-    PrintRoutingTable(RouterTable)
-    if(AssertRouterTable(TestTable)):
-        print("TestUMessageNextHop Passed")
-        return True
-    else:
-        print("TestUMessageNextHop Failed")
-        return False
-
-def TestUMessageLastHop():
-    RouterTable.clear()
-    RouterTable["A"] = LinkInfo(int(1), int(2), int(3))
-    RouterTable["B"] = LinkInfo(int(2), int(2), int(3))
-    DVUpdateMessage("U A 1 B 1")
-    
-    TestTable = {"A" : 1, "B" : 1}
-    if(AssertRouterTable(TestTable)):
-        print("TestUMessageDecrease Passed")
-        return True
-    else:
-        print("TestUMessageDecrease Failed")
-        return False
 
 def PrintRoutingTable(Table):
     ##prints top label for table
-    print("from ", SelfName,": ", end="")
+    print("Printing Table")
+    print("from ", SelfName,":", end="")
     for routerName in RouterList:
         print(routerName, end="  ")
     print()
@@ -139,42 +111,55 @@ def GetLowestCostForRouter(Router):
             lowestCost = RouterTable[Router][entry]
     return lowestCost
 
-
+#have to update for posion reverse
 def SendUMessage():
-    Message = "U"
-    #build U Message from our routing table
-    for entry in RouterList:
-        Message = Message + " " + entry + " " + str(GetLowestCostForRouter(entry))
+    Message = ""
+    if(PosionReverse):
+        Message = BuildUMessagePosion("B")
+    else:
+        Message = BuildUMessage()
+    print("Creating U Message")
     print(Message)
     #SendToAllNeighbor(Message)
 
-def SendToAllNeighbor(Message):
-    for entry in RouterTable:
-        SendToNeighBor(entry, Message)
+def BuildUMessage():
+    Message = "U"
+    for entry in RouterList:
+        Message = Message + " " + entry + " " + str(GetLowestCostForRouter(entry))
+    return Message
+#If we must go through another router to get to the destination we tell that router
+#that we have an infinate cost to get to it
+def BuildUMessagePosion(router):
+    Message = "U"
+    for entry in RouterList:
+        #if the lowest cost to get to a another router than we say it cost infinate
+        if(entry != router and GetLowestCostForRouter(entry) == RouterTable[entry][router]):
+            Message = Message + " " + entry + " " + str(64)
+        else:
+            Message = Message + " " + entry + " " + str(GetLowestCostForRouter(entry))
+    return Message
+    
+def ParseMessage(Message):
+    MessageType = Message[0]
+    if(MessageType == "L"):
+        ParseLMessage(Message)
+    else:
+        ParsePMessage(Message)
 
-def SendToNeighBor(NeighBor, Message):
-    print("dfsdffdsf")
-    #send message based the Neighbor field
+def ParseLMessage(Message):
+    print("Incoming L message: ", Message)
+    parts = Message.split(" ")
+    RouterTable[parts[1]][parts[1]] = int(parts[2])
 
-
-#Sudo Code from the Book for Distance Vector Algorithm
-
-#At Each Node,x:
-#Initialization:
-#   for all deestinations y in N:
-#       Dx(y) = c(x,y) # if y is not a neighbor then c(x,y) = inf
-#   for each neighbor w
-#       Dw(y) = ? for all destinations y in N
-#   for each nieghbor w
-#       send distance Vector Dx = [Dx(y): y in N] to w
-#loop
-#   wait (until I see a link cost change to some neighbor w or
-#           until I receive a distance vecotr from some neighbor w)
-#   for each y in N:
-#       Dx(y) = minv{x(x,y) + Dv(y)}
-#   if(Dx(y)) change for any destination y
-#       send distance vector Dx = [Dx(y): y in N] to all neighbors
-#forever
-
-
-
+def ParsePMessage(Message):
+    print("Income P Message")
+    if(len(Message) == 1):
+        PrintRoutingTable(RouterTable)
+    else:
+        PrintDestination(Message[2])
+        
+def PrintDestination(Destination):
+    print("Printing Entries for Destination: ", Destination, end=" ")
+    for entry in RouterList:
+        print(entry,RouterTable[Destination][entry], end=" ")
+    print()
