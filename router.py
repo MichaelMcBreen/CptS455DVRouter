@@ -104,6 +104,7 @@ def dvsimulator(argv):
                         msg = DVUpdateMessage(rName, m)
                         if poption:
                             sockDict[rName].send(msg.encode())
+                            resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
                             sent.append(rName)
                     else:
                         print("no data")    
