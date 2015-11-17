@@ -102,8 +102,9 @@ def dvsimulator(argv):
                     if len(msg) > 0:
                         print('Updating DVTable: ', msg)
                         msg = DVUpdateMessage(rName, m)
-                        sockDict[rName].send(msg.encode())
-                        sent.append(rName)
+                        if poption:
+                            sockDict[rName].send(msg.encode())
+                            sent.append(rName)
                     else:
                         print("no data")    
 
