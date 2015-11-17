@@ -37,57 +37,82 @@ def readrouters(testname):
     f.close()
     return table
 
+def readlinks(testname, router):
+    f = open(testname+'/'+router+'.cfg')
+    lines = f.readlines()
+    table = {}
+    for line in lines:
+        if line[0]=='#': continue
+        words = line.split(" ")
+        table[words[0]] = LinkInfo(int(words[1]), int(words[2]), int(words[3]))
+    f.close()
+    return table
 
-# make the set empty
-def FD_ZERO(setFDs):
-    del setFDs[:]
-
-# includes fd in the set
-def FD_SET (fd, setFDs):  
-    setFDs.append(fd)
-    setFDs.sort();
-
-# remove fd from the set
-def FD_CLR (fd, setFDs):
-    setFDs.remove(fd)
-
-# returns 1 if fd is in the set, 0 if not
-def FD_ISSET (fd, setFDs):
-    if(fd in setFDs):
-        return 1
-    else:
-        return 0
-
-def readAll(sock):
-    data = []
-    print("entering Read ALL")
+"""
+def recv_basic(sock):
+    total_data=[]
     while True:
-        print("start sock recv")
+        data = sock.recv(8192)
+        if not data: break
+        total_data.append(data.decode())
+    msgStr = ''.join(total_data)
+    messages = msgSplit(msgStr)
+    return messages
+
+def readAllMessages(sock):
+    chunks = []
+    print("Read: Reading Messages . . .")
+
+    while True:
         try:
-            chunk = sock.recv(2048)
+            s = sock.recv(2048)
+            s = s.decode()
+            print('Read: chunks = ', chunks)
+            if not s:
+                break
+            chunks.append(s)
         except:
-            print("leaving readALL", data)
-            if(len(data) == 0):
-                return ""
+            # print("leaving readALL on : ", data)
+            if len(chunks) == 0:
+                print('Read: nothing to read')
+                return []
             else:
-                return ''.join(data)
+                msgStr = ''.join(chunks)
+                print('Read: ', msgStr)
+                if not msgStr:
+                    return []
+                else:
+                    messages = msgSplit(msgStr)
+                    return messages
+    
+    if not s:
+        msgStr = ''.join(chunks)
+        if not msgStr:
+            return []
+        else:
+            messages = msgSplit(msgStr)
+            return messages
+        return ''.join(chunks)
 
-        print("here is a chunk" , chunk)
-        data.append(str(chunk))
-    return ''.join(data)
+    return []
 
-def msgSplit(data):
+def msgSplit(msgStr):
+    print('Read Split: Splitting msgStr . . .')
     messages = []
     j = 0
     i = 0
-    data = data.decode()
-    while i < len(data):
+    while i < len(msgStr):
         j = i + 1
-        while j < len(data) and not (j == len(data) or str(data[j]) == 'U' or str(data[j]) == 'L' or data[j:j+1] == 'P'):
+        while j < len(msgStr) and not (j == len(msgStr) or str(msgStr[j]) == 'U' or str(msgStr[j]) == 'L' or msgStr[j:j+1] == 'P'):
             j = j + 1
-        messages.append(data[i:j].strip(' '))
+        messages.append(msgStr[i:j].strip(' '))
         i = j
     return messages
+"""
+
+def recieve(sock):
+    return sock.recv(2048).decode()
+
 
 def main(argv):
     dvsimulator(argv)
@@ -118,40 +143,49 @@ def dvsimulator(argv):
     f.close()
     
     print ('Setting Up Sockets . . .')
-    baseDict, sockDict = setup_sockets(routerName, rtrTable, linkTable)
+    baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
 
+    loopTime = 5
     while 1:
         start = time.time()
-        print("Looping at time: ", start)
+        sockList = list(sockDict.values())
+        rReady, wReady, eReady = select.select(sockList, sockList, sockList, loopTime)
+        # !!!!!!!!!!!!!!!!!!! need to read baseport sockets too
         
+        # timeout handling
+        if len(rReady) == 0:
+            print ("Timeout Error: No available sockets")
         # read available messages
-        for rName in sockDict:
-            # read all data in socket and parse messages
-            print("uisng router ", rName)
-            data = readAll(sockDict[rName])
-            if data:
-                print('Recv : ', data)
-                messages = msgSplit(data)
-                print("msg: ", messages)
-                #for m in messages:
-                #    DVUpdateMessage(rName, m)
-            else:
-                print("no data")
-                
-        # indent into 'if data:'' statement after we know it works
+        else:
+            for rName in sockDict:
+                if sockDict[rName] in rReady:
+                    # read all data in socket and parse messages
+                    #print("using router ", rName)
+                    #msgList = readAllMessages(sockDict[rName])
+                    msg = recieve(sockDict[rName])
+                    if len(msg) > 0:
+                        print('Updating DVTable: ', msg)
+                        #for m in messages:
+                        #    DVUpdateMessage(rName, m)
+                    else:
+                        print("no data")    
+
         # send updated DVtable to all available neighbors
-        for sock in list(sockDict.values()):
-            print('Send : ', 'Hello World')
-            message = routerName + "Hello"
-            sock.send(message.encode())
-        end = time.time()
+        for rName in sockDict:
+            message = routerName + "Hello\n"
+            print('Send : ', message)
+            sockDict[rName].send(message.encode())
+            resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
 
         # updates sent every 30 seconds
-        t = 30 - end + start
-        if t >= 0 and t < 5: time.sleep(t)
+        end = time.time()
+        t = loopTime - end + start
+        print('TIMER: (start=', start, ") (end=", end, ") (time=", t, ")")
+        if t > 0:
+            time.sleep(t)
 
 # setup sockets
-def setup_sockets(localName, rtrTable, linkTable):
+def setupSockets(localName, rtrTable, linkTable):
     #initalize address_in/out, unconnected inputs/ output dictionaries
     print('-----inside setup_sockets()')
     sockDict = {}
@@ -176,22 +210,20 @@ def setup_sockets(localName, rtrTable, linkTable):
         sockDict[remoteName] = s        
     return  baseDict, sockDict
 
+def resetSocket(localName, rtrTable, linkTable, sockDict, sockName):
+    iFD = rtrTable[localName].baseport + linkTable[sockName].locallink
+    oFD = rtrTable[sockName].baseport + linkTable[sockName].remotelink
+    sockDict[sockName].close()
+    sockDict[sockName] = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sockDict[sockName].bind((rtrTable[localName].host, iFD))
+    sockDict[sockName].connect((rtrTable[sockName].host, oFD))
+
+
 def printFDList(socketDict, servSock):
     print("printing sockets")
     for entry in socketDict:
         print(entry, servSock[entry])
 
-
-def readlinks(testname, router):
-    f = open(testname+'/'+router+'.cfg')
-    lines = f.readlines()
-    table = {}
-    for line in lines:
-        if line[0]=='#': continue
-        words = line.split(" ")
-        table[words[0]] = LinkInfo(int(words[1]), int(words[2]), int(words[3]))
-    f.close()
-    return table
 
 def PrintRoutingTable(Table):
     ##prints top label for table
