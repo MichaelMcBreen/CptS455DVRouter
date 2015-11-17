@@ -106,103 +106,57 @@ def dvsimulator(argv):
     f = open(routerName + ".output", 'w')
     f.close()
     
-    print ('Creating Sockets . . .')
-    inputs, outputs, toConnInputs, toConnOutputs = create_sockets(routerName, rtrTable, linkTable)
-    print ('Connecting Sockets . . .')
-    connect_sockets(rtrTable, linkTable, inputs, outputs, toConnInputs, toConnOutputs)
+    print ('Setting Up Sockets . . .')
+    baseDict, sockDict = setup_sockets(routerName, rtrTable, linkTable)
 
     while 1:
         start = time.time()
         print("Looping at time: ", start)
         
-        rReady, wReady, eReady = select.select(list(inputs.values()), list(outputs.values()), list(inputs.values()))
-
-        # timeout handling
-        if len(rReady) == 0:
-            print ("Timeout Error: No available sockets")
         # read available messages
-        else:
-            for iName in rReady:
-                # read all data in socket and parse messages
-                data = readAll(s)
+        for rName in sockDict:
+            # read all data in socket and parse messages
+            data = readAll(sockDict[rName])
+            if data:
                 print('Recv : ', data)
                 messages = msgSplit(data)
                 for m in messages:
-                    DVUpdateMessage(servSock[s], m)
+                    DVUpdateMessage(rName, m)
+
+        # indent into 'if data:'' statement after we know it works
         # send updated DVtable to all available neighbors
-        for s in wReady:
-            # needs to modify for poison and specific messages
-            # data = BuildUMessage()
+        for sock in sockDict:
             print('Send : ', 'Hello World')
-            # send takes a BYTES object not STR
-            s.send(b'Hello World')
-        
+            sock.send(b'Hello World')
         end = time.time()
 
         # updates sent every 30 seconds
         t = 30 - end + start
         if t >= 0 and t < 30: time.sleep(t)
 
-# makes sockets
-def create_sockets(routerName, rtrTable, linkTable):
+# setup sockets
+def setup_sockets(localName, rtrTable, linkTable):
     #initalize address_in/out, unconnected inputs/ output dictionaries
-    print('-----inside create_sockets()')
+    print('-----inside setup_sockets()')
+    sockDict = {}
+    baseDict = {}
 
-    toConnInputs = []
-    toConnOutputs = []
-    inputs = {}
-    outputs = {}
+    # setup baseport
+    bFD = rtrTable[localName].baseport
+    bSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    bSocket.bind((rtrTable[localName].host, bFD))
+    baseDict[localName] = bSocket
 
-    bFD = rtrTable[routerName].baseport
-    bSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    bSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    bSocket.setblocking(False)
-    bSocket.bind((rtrTable[routerName].host, bFD))
-    bSocket.listen(10)
-    inputs[routerName] = bSocket    
-
-    for rName in linkTable:
+    # setup neighbors
+    for remoteName in linkTable:
         # router's base + locallink
-        iFD = rtrTable[routerName].baseport + linkTable[rName].locallink
-        iSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        iSocket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        iSocket.setblocking(False)
-        iSocket.bind((rtrTable[rName].host, iFD))
-        iSocket.listen(5)
-        toConnInputs.append(rName)
-        
-        # remote's base + remotelink
-        oFD =  rtrTable[rName].baseport + linkTable[rName].remotelink
-        oSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        toConnOutputs.append(rName)
-
-        inputs[rName] = iSocket
-        outputs[rName] = oSocket
-
-    return  inputs, outputs, toConnInputs, toConnOutputs
-
-def connect_sockets(rtrTable, linkTable, inputs, outputs, toConnInputs, toConnOutputs):
-    print("--------inside connect_sockets()")
-    print ('inputs : ', inputs)
-    print ('outputs: ', outputs)
-    while len(toConnInputs) + len(toConnOutputs) > 0:
-        for oName in toConnOutputs:
-            try:
-                outputs[oName].connect((rtrTable[oName].host, rtrTable[oName].baseport + linkTable[oName].remotelink))
-                print("Output Connected : ", oName)
-                toConnOutputs.remove(oName)
-            except socket.error:
-                pass
-        # passing dictionary inputs, outputs - do dictionaries work?
-        rReady, wReady, eReady = select.select(list(inputs.values()), list(outputs.values()), [])
-        
-        for iSock in rReady:
-            for iName in inputs:
-                if inputs[iName] == iSock:
-                    sock, addr = inputs[iName].accept()
-                    print("Input Connected : ", iName)
-                    inputs[iName] = sock
-                    toConnInputs.remove(iName)
+        iFD = rtrTable[localName].baseport + linkTable[remoteName].locallink
+        oFD = rtrTable[remoteName].baseport + linkTable[remoteName].remotelink
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.bind((rtrTable[localName].host, iFD))
+        s.connect((rtrTable[remoteName].host, oFD))
+        sockDict[remoteName] = s        
+    return  baseDict, sockDict
 
 def printFDList(socketDict, servSock):
     print("printing sockets")
