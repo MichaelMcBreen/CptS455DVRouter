@@ -48,68 +48,6 @@ def readlinks(testname, router):
     f.close()
     return table
 
-"""
-def recv_basic(sock):
-    total_data=[]
-    while True:
-        data = sock.recv(8192)
-        if not data: break
-        total_data.append(data.decode())
-    msgStr = ''.join(total_data)
-    messages = msgSplit(msgStr)
-    return messages
-
-def readAllMessages(sock):
-    chunks = []
-    print("Read: Reading Messages . . .")
-
-    while True:
-        try:
-            s = sock.recv(2048)
-            s = s.decode()
-            print('Read: chunks = ', chunks)
-            if not s:
-                break
-            chunks.append(s)
-        except:
-            # print("leaving readALL on : ", data)
-            if len(chunks) == 0:
-                print('Read: nothing to read')
-                return []
-            else:
-                msgStr = ''.join(chunks)
-                print('Read: ', msgStr)
-                if not msgStr:
-                    return []
-                else:
-                    messages = msgSplit(msgStr)
-                    return messages
-    
-    if not s:
-        msgStr = ''.join(chunks)
-        if not msgStr:
-            return []
-        else:
-            messages = msgSplit(msgStr)
-            return messages
-        return ''.join(chunks)
-
-    return []
-
-def msgSplit(msgStr):
-    print('Read Split: Splitting msgStr . . .')
-    messages = []
-    j = 0
-    i = 0
-    while i < len(msgStr):
-        j = i + 1
-        while j < len(msgStr) and not (j == len(msgStr) or str(msgStr[j]) == 'U' or str(msgStr[j]) == 'L' or msgStr[j:j+1] == 'P'):
-            j = j + 1
-        messages.append(msgStr[i:j].strip(' '))
-        i = j
-    return messages
-"""
-
 def recieve(sock):
     return sock.recv(2048).decode()
 
@@ -148,6 +86,7 @@ def dvsimulator(argv):
     loopTime = 5
     while 1:
         start = time.time()
+        sent = []
         sockList = list(sockDict.values())
         rReady, wReady, eReady = select.select(sockList, sockList, sockList, loopTime)
         # !!!!!!!!!!!!!!!!!!! need to read baseport sockets too
@@ -159,23 +98,22 @@ def dvsimulator(argv):
         else:
             for rName in sockDict:
                 if sockDict[rName] in rReady:
-                    # read all data in socket and parse messages
-                    #print("using router ", rName)
-                    #msgList = readAllMessages(sockDict[rName])
                     msg = recieve(sockDict[rName])
                     if len(msg) > 0:
                         print('Updating DVTable: ', msg)
-                        #for m in messages:
-                        #    DVUpdateMessage(rName, m)
+                        msg = DVUpdateMessage(rName, m)
+                        sockDict[rName].send(msg.encode())
+                        sent.append(rName)
                     else:
                         print("no data")    
 
         # send updated DVtable to all available neighbors
         for rName in sockDict:
-            message = routerName + "Hello\n"
-            print('Send : ', message)
-            sockDict[rName].send(message.encode())
-            resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
+            if rName not in sent:
+                message = routerName + "Hello\n"
+                print('Send : ', message)
+                sockDict[rName].send(message.encode())
+                resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
 
         # updates sent every 30 seconds
         end = time.time()
