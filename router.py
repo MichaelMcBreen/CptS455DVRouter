@@ -8,8 +8,8 @@ import re
 
 #everything is global till we create more of an outline
 RouterTable = {} #Dictionary of Dictionary
-RouterList = ["A", "B", "C", "D"]
-SelfName = "A"
+RouterList = []
+SelfName = "Not Set"
 PosionReverse = True
 
 class RouterInfo:
@@ -52,8 +52,36 @@ def recieve(sock):
     return sock.recv(2048).decode()
 
 
-def main(argv):
-    dvsimulator(argv)
+def main():
+    dvsimulator(["router.py", "-p", "test1", "A"])
+
+def BuildTable(rTable, linkTable):
+    print("Creating routing table")
+    for router in rTable:
+        RouterList.append(str(router))
+    RouterList.sort()
+    
+    for router in RouterList:
+        row= {}
+        #sets table to all infinate
+        for entry in RouterList:
+            row[entry] = 64
+        RouterTable[router] = row
+    #sets connection to self as 0
+    PrintRoutingTable(RouterTable)
+    print(SelfName)
+    print(RouterTable[SelfName][SelfName])
+    RouterTable[SelfName][SelfName] = 0
+    #sets inital costs
+    for entry in linkTable:
+        RouterTable[entry][entry] = linkTable[entry].cost
+        
+    PrintRoutingTable(RouterTable)
+
+#RouterTable["A"] = {"A": 0,"B" : 64,"C": 64, "D": 64}
+#    RouterTable["B"] = {"A":64,"B" : 3,"C": 64, "D": 64}
+#    RouterTable["C"] = {"A":64,"B": 64,"C": 23, "D": 64}
+#    RouterTable["D"] = {"A":64,"B": 64, "C": 64, "D" : 64}
 
 def dvsimulator(argv):
     print ('----ENTERING dvsimulator-----')
@@ -69,11 +97,16 @@ def dvsimulator(argv):
         poption = False
         testDirName = argv[2]
         routerName = argv[3]
+    
     print(poption, testDirName, routerName)
+    
+    global SelfName
+    SelfName = str(routerName)
     
     print ('calling readrouters(testDirName)')
     rtrTable = readrouters(testDirName)
     linkTable = readlinks(testDirName,routerName)
+    BuildTable(rtrTable, linkTable)
     dvtable = {}
     
     #open up output file to log
@@ -81,9 +114,11 @@ def dvsimulator(argv):
     f.close()
     
     print ('Setting Up Sockets . . .')
+
     baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
 
     loopTime = 5
+
     while 1:
         start = time.time()
         sent = []
@@ -101,7 +136,7 @@ def dvsimulator(argv):
                     msg = recieve(sockDict[rName])
                     if len(msg) > 0:
                         print('Updating DVTable: ', msg)
-                        msg = DVUpdateMessage(rName, m)
+                        #msg = DVUpdateMessage(rName, m)
                         if poption:
                             sockDict[rName].send(msg.encode())
                             resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
@@ -168,13 +203,13 @@ def printFDList(socketDict, servSock):
 def PrintRoutingTable(Table):
     ##prints top label for table
     print("Printing Table")
-    print("from ", SelfName,":", end="")
+    print("from", SelfName,":", end=" ")
     for routerName in RouterList:
         print(routerName, end="  ")
     print()
     "prints start of row"
     for routerName in RouterList:
-        print("to   ", routerName, end= " : ")
+        print("to ", routerName, end= " : ")
         #prints each entry in a row
         for entry in RouterList:
             print(repr(Table[routerName][entry]).ljust(2), end=" ")
