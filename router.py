@@ -263,17 +263,6 @@ def GetLowestCostForRouter(Router):
             lowestCost = RouterTable[Router][entry]
     return lowestCost
 
-#selection which type of message to create
-def SendUMessage():
-    Message = ""
-    if(PosionReverse):
-        Message = BuildUMessagePosion("B")
-    else:
-        Message = BuildUMessage()
-    print("Creating U Message")
-    print(Message)
-    #SendToAllNeighbor(Message)
-
 #build a regulay U message
 def BuildUMessage():
     Message = "U"
