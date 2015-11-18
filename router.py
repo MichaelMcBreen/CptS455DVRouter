@@ -56,7 +56,6 @@ def main():
     dvsimulator(["router.py", "-p", "test1", "A"])
 
 def BuildTable(rTable, linkTable):
-    print("Creating routing table")
     for router in rTable:
         RouterList.append(str(router))
     RouterList.sort()
@@ -99,6 +98,7 @@ def dvsimulator(argv):
     f = open("output" + routerName + ".txt", 'w')
     baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
     
+    # loopTime = 30
     loopTime = 5
     while 1:
         start = time.time()
@@ -106,17 +106,18 @@ def dvsimulator(argv):
         sockList = list(sockDict.values())
         rReady, wReady, eReady = select.select(baseList + sockList, sockList, sockList, loopTime)
         
-        # timeout handling
+        # timeout no sockets to read from
         if len(rReady) == 0:
             print ("Timeout Error: No available sockets")
-        # read available messages
         else:
+            # read from neighbor sockets
             for rName in sockDict:
                 if sockDict[rName] in rReady:
                     msg = recieve(sockDict[rName])
                     if len(msg) > 0:
                         print('Recv MSG : ', msg)
                         DVUpdateMessage(rName, msg)
+            # read from baseport sockets
             for rName in baseDict:
                 if baseDict[rName] in rReady:
                     msg = recieve(baseDict[rName])
@@ -221,7 +222,7 @@ def DVUpdateMessage(From, Message):
         if(RouterTable[rows][From] > 64):
             RouterTable[rows][From] = 64
     print("After")
-    PrintRoutingTable(RouterTable)   
+    PrintRoutingTable(RouterTable)
 
 def GetLowestCostForRouter(Router):
     lowestCost = 64
