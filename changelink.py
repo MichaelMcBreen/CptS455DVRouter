@@ -11,8 +11,8 @@ def change(test, end1, end2, newcost):
     msg1 = 'L %s %d' % (end2, newcost)
     msg2 = 'L %s %d' % (end1, newcost)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.sendto(msg1, end1info)
-    s.sendto(msg2, end2info)
+    s.sendto(msg1.encode(), end1info)
+    s.sendto(msg2.encode(), end2info)
 
 if __name__=='__main__':
     import sys

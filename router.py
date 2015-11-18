@@ -108,7 +108,7 @@ def dvsimulator(argv):
     baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
     
     # loopTime = 30
-    loopTime = 5
+    loopTime = 10
     while 1:
         start = time.time()
         baseList = list(baseDict.values())
@@ -119,38 +119,55 @@ def dvsimulator(argv):
         if len(rReady) == 0:
             print ("Timeout Error: No available sockets")
         else:
-            # read from neighbor sockets
-            for rName in sockDict:
-                if sockDict[rName] in rReady:
-                    msg = recieve(sockDict[rName])
-                    if len(msg) > 0:
-                        print('Recv MSG : ', msg)
-                        DVUpdateMessage(rName, msg)
-            # read from baseport sockets
-            for rName in baseDict:
-                if baseDict[rName] in rReady:
-                    msg = recieve(baseDict[rName])
-                    if len(msg) > 0:
-                        print('Recv MSG : ', msg)
-                        DVUpdateMessage(rName, msg)
+            # read update messages from baseport and neighbor sockets
+            readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict)
 
-        sendUpdates(routerName, poption, rtrTable, linkTable, sockDict)
+        # send update messages to neighbor sockets
+        sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict)
+
+        
+        PrintRoutingTable(RouterTable)
+    
+
 
         # timer to loop every 30 seconds
         end = time.time()
         t = loopTime - end + start
-        if t > 0:
-            time.sleep(t)
+        while t > 0:
+            time.sleep(1)
+            # check for triggered updates to baseport sockets
+            rReady, wReady, eReady = select.select(baseList, baseList, baseList)
+            if len(rReady) > 0:
+                break
+
+            t = t - 1
     f.close()
 
+# read messages from baseport and neighbor sockets
+def readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict):
+    # read from neighbor sockets
+    for rName in sockDict:
+        if sockDict[rName] in rReady:
+            msg = recieve(sockDict[rName])
+            if len(msg) > 0:
+                print('Recv MSG ', rName, ' : ', msg)
+                DVUpdateMessage(rName, msg)
+    # read from baseport sockets
+    for rName in baseDict:
+        if baseDict[rName] in rReady:
+            msg = recieve(baseDict[rName])
+            if len(msg) > 0:
+                print('Recv MSG ', rName, ' : ', msg)
+                DVUpdateMessage(rName, msg)
+
 # send DVTable update message to neighbors
-def sendUpdates(routerName, poption, rtrTable, linkTable, sockDict):
+def sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict):
     for rName in sockDict:
         if poption:
             message = BuildUMessagePosion(rName)
         else:
             message = BuildUMessage()
-        print('Send : ', message)
+        print('Send To ', rName, ' : ', message)
         sockDict[rName].send(message.encode())
         resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
 
@@ -164,7 +181,7 @@ def setupSockets(localName, rtrTable, linkTable):
     # setup baseport
     bFD = rtrTable[localName].baseport
     bSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    bSocket.setblocking(False)
+    #bSocket.setblocking(False)
     bSocket.bind((rtrTable[localName].host, bFD))
     baseDict[localName] = bSocket
 
@@ -174,7 +191,7 @@ def setupSockets(localName, rtrTable, linkTable):
         iFD = rtrTable[localName].baseport + linkTable[remoteName].locallink
         oFD = rtrTable[remoteName].baseport + linkTable[remoteName].remotelink
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.setblocking(False)
+        #s.setblocking(False)
         s.bind((rtrTable[localName].host, iFD))
         s.connect((rtrTable[remoteName].host, oFD))
         sockDict[remoteName] = s        
@@ -216,31 +233,27 @@ def PrintRoutingTable(Table):
 
 #updates routing table from received update
 def DVUpdateMessage(From, Message):
-    print("Incoming U Message from: ", From, " ", Message)
-    print("Before")
-    changesMade = False
-    PrintRoutingTable(RouterTable)
-    Updates = Message.split(" ")
-    #remove the 'U'
-    Updates = Updates[1:len(Updates)]
-    Values = {}
-    for i in range(0,int(len(Updates)/2)):
-        #load each update into router and cost
-        Values[Updates[2*i]] = int(Updates[2*i + 1])
-    for rows in RouterList:
-        #Update the from collumn
-        #Sets to row from From to the lowest cost to get to From + cost from From to
-        currentValue = RouterTable[rows][From]
-        RouterTable[rows][From] = RouterTable[From][From] + Values[rows]
-        if(RouterTable[rows][From] > 64):
-            RouterTable[rows][From] = 64
-        if(RouterTable[rows][From] != currentValue):
-            PrintLinkChanges(rows,RouterTable[rows][From],From)
-            changesMade = True
-    print("After")
-    PrintRoutingTable(RouterTable)
-    if(changesMade == True):
-        TriggeredUpdate()
+    
+    if Message[0] == "U":
+        #changesMade = False
+        Updates = Message.split(" ")
+        #remove the 'U'
+        Updates = Updates[1:len(Updates)]
+        Values = {}
+        for i in range(0,int(len(Updates)/2)):
+            #load each update into router and cost
+            Values[Updates[2*i]] = int(Updates[2*i + 1])
+        for rows in RouterList:
+            #Update the from collumn
+            #Sets to row from From to the lowest cost to get to From + cost from From to
+            currentValue = RouterTable[rows][From]
+            RouterTable[rows][From] = RouterTable[From][From] + Values[rows]
+            if(RouterTable[rows][From] > 64):
+                RouterTable[rows][From] = 64
+            if(RouterTable[rows][From] != currentValue):
+                PrintLinkChanges(rows,RouterTable[rows][From],From)
+    else:
+        ParseMessage(Message)
 
 #gets the lowest cost to a router
 def GetLowestCostForRouter(Router):
@@ -296,7 +309,6 @@ def ParseLMessage(Message):
     RouterTable[parts[1]][parts[1]] = int(parts[2])
     if(currentValue != RouterTable[parts[1]][parts[1]]):
         PrintLinkChanges(parts[1],RouterTable[parts[1]][parts[1]],parts[1])
-        TriggeredUpdate()
 
 #parses P messages
 def ParsePMessage(Message):
@@ -315,9 +327,6 @@ def PrintDestination(Destination):
 
 def PrintLinkChanges(dest, cost, nexthop):
     print(SelfName, " - dest:", dest, " cost:", cost, " nexthop:",nexthop)
-    
-def TriggeredUpdate():
-    print("TriggeredUpdate")
 
 #Calls DVSimulator with cmd argv
 dvsimulator(sys.argv)
