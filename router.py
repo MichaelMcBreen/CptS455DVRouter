@@ -68,9 +68,6 @@ def BuildTable(rTable, linkTable):
             row[entry] = 64
         RouterTable[router] = row
     #sets connection to self as 0
-    PrintRoutingTable(RouterTable)
-    print(SelfName)
-    print(RouterTable[SelfName][SelfName])
     RouterTable[SelfName][SelfName] = 0
     #sets inital costs
     for entry in linkTable:
@@ -78,17 +75,7 @@ def BuildTable(rTable, linkTable):
         
     PrintRoutingTable(RouterTable)
 
-#RouterTable["A"] = {"A": 0,"B" : 64,"C": 64, "D": 64}
-#    RouterTable["B"] = {"A":64,"B" : 3,"C": 64, "D": 64}
-#    RouterTable["C"] = {"A":64,"B": 64,"C": 23, "D": 64}
-#    RouterTable["D"] = {"A":64,"B": 64, "C": 64, "D" : 64}
-
 def dvsimulator(argv):
-    print ('----ENTERING dvsimulator-----')
-    print("I am working", argv)
-    testDirName = "Test1"
-    routerName = "A"
-    poption = False
     if(len(argv) == 3):
         poption = True
         testDirName = argv[3]
@@ -99,32 +86,25 @@ def dvsimulator(argv):
         routerName = argv[3]
     
     print(poption, testDirName, routerName)
-    
     global SelfName
+
     SelfName = str(routerName)
     
-    print ('calling readrouters(testDirName)')
     rtrTable = readrouters(testDirName)
     linkTable = readlinks(testDirName,routerName)
     BuildTable(rtrTable, linkTable)
     dvtable = {}
     
     #open up output file to log
-    f = open(routerName + ".output", 'w')
-    f.close()
-    
-    print ('Setting Up Sockets . . .')
-
+    f = open("output" + routerName + ".txt", 'w')
     baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
-
+    
     loopTime = 5
-
     while 1:
         start = time.time()
-        sent = []
+        baseList = list(baseDict.values())
         sockList = list(sockDict.values())
-        rReady, wReady, eReady = select.select(sockList, sockList, sockList, loopTime)
-        # !!!!!!!!!!!!!!!!!!! need to read baseport sockets too
+        rReady, wReady, eReady = select.select(baseList + sockList, sockList, sockList, loopTime)
         
         # timeout handling
         if len(rReady) == 0:
@@ -135,29 +115,34 @@ def dvsimulator(argv):
                 if sockDict[rName] in rReady:
                     msg = recieve(sockDict[rName])
                     if len(msg) > 0:
-                        print('Updating DVTable: ', msg)
-                        #msg = DVUpdateMessage(rName, m)
-                        if poption:
-                            sockDict[rName].send(msg.encode())
-                            resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
-                            sent.append(rName)
-                    else:
-                        print("no data")    
+                        print('Recv MSG : ', msg)
+                        DVUpdateMessage(rName, msg)
+            for rName in baseDict:
+                if baseDict[rName] in rReady:
+                    msg = recieve(baseDict[rName])
+                    if len(msg) > 0:
+                        print('Recv MSG : ', msg)
+                        DVUpdateMessage(rName, msg)
 
-        # send updated DVtable to all available neighbors
-        for rName in sockDict:
-            if rName not in sent:
-                message = routerName + "Hello\n"
-                print('Send : ', message)
-                sockDict[rName].send(message.encode())
-                resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
+        sendUpdates(routerName, poption, rtrTable, linkTable, sockDict)
 
-        # updates sent every 30 seconds
+        # timer to loop every 30 seconds
         end = time.time()
         t = loopTime - end + start
-        print('TIMER: (start=', start, ") (end=", end, ") (time=", t, ")")
         if t > 0:
             time.sleep(t)
+    f.close()
+
+# send DVTable update message to neighbors
+def sendUpdates(routerName, poption, rtrTable, linkTable, sockDict):
+    for rName in sockDict:
+        if poption:
+            message = BuildUMessagePoison()
+        else:
+            message = BuildUMessage()
+        print('Send : ', message)
+        sockDict[rName].send(message.encode())
+        resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
 
 # setup sockets
 def setupSockets(localName, rtrTable, linkTable):
@@ -205,14 +190,17 @@ def PrintRoutingTable(Table):
     print("Printing Table")
     print("from", SelfName,":", end=" ")
     for routerName in RouterList:
-        print(routerName, end="  ")
+        print("via" , routerName, end="  ")
     print()
     "prints start of row"
     for routerName in RouterList:
-        print("to ", routerName, end= " : ")
+        print("to  ", routerName, end= " :  ")
         #prints each entry in a row
         for entry in RouterList:
-            print(repr(Table[routerName][entry]).ljust(2), end=" ")
+            printedCost = Table[routerName][entry]
+            if(printedCost == 64):
+                printedCost = "INF"
+            print(repr(printedCost).rjust(5), end="  ")
         print()
 
 def DVUpdateMessage(From, Message):
