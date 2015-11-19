@@ -116,7 +116,7 @@ def dvsimulator(argv):
         # send update messages to neighbor sockets
         sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict)
         # print the DV Table
-        # PrintDVTable()
+        PrintDVTable()
         # timer to loop every 30 seconds
         end = time.time()
         t = loopTime - end + start

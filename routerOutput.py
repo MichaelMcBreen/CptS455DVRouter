@@ -101,7 +101,11 @@ def dvsimulator(argv):
     # loopTime = 30
     loopTime = 1
     global f
-    f = open("output" + SelfName + ".txt ", "w")
+
+    fName = "output" + SelfName + ".txt "
+    if poption:
+        fName = 'P' + fName
+    f = open(fName, "w")
     while 1:
         start = time.time()
         baseList = list(baseDict.values())
@@ -116,7 +120,7 @@ def dvsimulator(argv):
         # send update messages to neighbor sockets
         sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict)
         # print the DV Table
-        # PrintDVTable()
+        PrintDVTable()
         # timer to loop every 30 seconds
         end = time.time()
         t = loopTime - end + start
