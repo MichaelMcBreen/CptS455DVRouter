@@ -30,10 +30,8 @@ def readrouters(testname):
     table = {}
     for line in lines:
         if line[0]=='#': continue
-        #print line
         words = line.split(" ")    
         table[words[0]] = RouterInfo(words[1], int(words[2]))
-
     f.close()
     return table
 
@@ -100,8 +98,7 @@ def dvsimulator(argv):
     dvtable = {}
     # setup sockets for read/write
     baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
-    # loopTime = 30
-    loopTime = 1
+    loopTime = 30
     while 1:
         start = time.time()
         baseList = list(baseDict.values())
@@ -135,14 +132,14 @@ def readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict):
         if sockDict[rName] in rReady:
             msg = recieve(sockDict[rName])
             if len(msg) > 0:
-                print('Recv MSG ', rName, ' : ', msg)
+                # print('Recv MSG ', rName, ' : ', msg)
                 DVUpdateMessage(rName, msg)
     # read from baseport sockets
     for rName in baseDict:
         if baseDict[rName] in rReady:
             msg = recieve(baseDict[rName])
             if len(msg) > 0:
-                print('Recv MSG ', rName, ' : ', msg)
+                # print('Recv MSG ', rName, ' : ', msg)
                 DVUpdateMessage(rName, msg)
 
 # send DVTable update message to neighbors
@@ -152,7 +149,7 @@ def sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict):
             message = BuildUMessagePoison(rName)
         else:
             message = BuildUMessage()
-        print('Send To ', rName, ' : ', message)
+        # print('Send To ', rName, ' : ', message)
         sockDict[rName].send(message.encode())
         resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
 
