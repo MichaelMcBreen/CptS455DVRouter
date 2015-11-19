@@ -1,0 +1,1047 @@
+************************************************************************************************
+TEST 1 WITHOUT POISON REVERSE
+ROUTER A
+Initial Table
+
+Printing DVTable
+from A :  via A via B via C via D via E
+to   A : '   0''  13'' INF'' INF''   2'
+to   B : ' INF''   7'' INF'' INF''   6'
+to   C : ' INF''   8'' INF'' INF''   5'
+to   D : ' INF''  10'' INF'' INF''   3'
+to   E : ' INF''  12'' INF'' INF''   1'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 6 nexthop: E)
+(A - dest: C cost: 5 nexthop: E)
+(A - dest: D cost: 3 nexthop: E)
+(A - dest: E cost: 1 nexthop: E)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from A :  via A via B via C via D via E
+to   A : '   0''  10'' INF'' INF''   2'
+to   B : ' INF''   7'' INF'' INF''   3'
+to   C : ' INF''   8'' INF'' INF''   4'
+to   D : ' INF''  10'' INF'' INF''   3'
+to   E : ' INF''   9'' INF'' INF''   1'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 3 nexthop: E)
+(A - dest: C cost: 4 nexthop: E)
+(A - dest: D cost: 3 nexthop: E)
+(A - dest: E cost: 1 nexthop: E)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from A :  via A via B via C via D via E
+to   A : '   0''  13'' INF'' INF''   2'
+to   B : ' INF''   7'' INF'' INF''   6'
+to   C : ' INF''   8'' INF'' INF''   5'
+to   D : ' INF''  10'' INF'' INF''   3'
+to   E : ' INF''  12'' INF'' INF''   1'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 6 nexthop: E)
+(A - dest: C cost: 5 nexthop: E)
+(A - dest: D cost: 3 nexthop: E)
+(A - dest: E cost: 1 nexthop: E)
+
+
+ROUTER B
+Initial Table
+
+Printing DVTable
+from B :  via A via B via C via D via E
+to   A : '   7'' INF''   6'' INF''   9'
+to   B : '  13''   0''   2'' INF''  13'
+to   C : '  12'' INF''   1'' INF''  12'
+to   D : '  10'' INF''   3'' INF''  10'
+to   E : '   8'' INF''   5'' INF''   8'
+Printing Routing Table
+(B - dest: A cost: 6 nexthop: C)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 1 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 5 nexthop: C)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from B :  via A via B via C via D via E
+to   A : '   7'' INF''   5'' INF''   3'
+to   B : '  10''   0''   2'' INF''   4'
+to   C : '  11'' INF''   1'' INF''   5'
+to   D : '  10'' INF''   3'' INF''   4'
+to   E : '   8'' INF''   4'' INF''   2'
+Printing Routing Table
+(B - dest: A cost: 3 nexthop: E)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 1 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 2 nexthop: E)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from B :  via A via B via C via D via E
+to   A : '   7'' INF''   6'' INF''   9'
+to   B : '  13''   0''   2'' INF''  13'
+to   C : '  12'' INF''   1'' INF''  12'
+to   D : '  10'' INF''   3'' INF''  10'
+to   E : '   8'' INF''   5'' INF''   8'
+Printing Routing Table
+(B - dest: A cost: 6 nexthop: C)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 1 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 5 nexthop: C)
+
+
+ROUTER C
+Initial Table
+
+Printing DVTable
+from C :  via A via B via C via D via E
+to   A : ' INF''   7'' INF''   5'' INF'
+to   B : ' INF''   1'' INF''   5'' INF'
+to   C : ' INF''   2''   0''   4'' INF'
+to   D : ' INF''   4'' INF''   2'' INF'
+to   E : ' INF''   6'' INF''   4'' INF'
+Printing Routing Table
+(C - dest: A cost: 5 nexthop: D)
+(C - dest: B cost: 1 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 2 nexthop: D)
+(C - dest: E cost: 4 nexthop: D)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from C :  via A via B via C via D via E
+to   A : ' INF''   4'' INF''   5'' INF'
+to   B : ' INF''   1'' INF''   5'' INF'
+to   C : ' INF''   2''   0''   4'' INF'
+to   D : ' INF''   4'' INF''   2'' INF'
+to   E : ' INF''   3'' INF''   4'' INF'
+Printing Routing Table
+(C - dest: A cost: 4 nexthop: B)
+(C - dest: B cost: 1 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 2 nexthop: D)
+(C - dest: E cost: 3 nexthop: B)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from C :  via A via B via C via D via E
+to   A : ' INF''   7'' INF''   5'' INF'
+to   B : ' INF''   1'' INF''   5'' INF'
+to   C : ' INF''   2''   0''   4'' INF'
+to   D : ' INF''   4'' INF''   2'' INF'
+to   E : ' INF''   6'' INF''   4'' INF'
+Printing Routing Table
+(C - dest: A cost: 5 nexthop: D)
+(C - dest: B cost: 1 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 2 nexthop: D)
+(C - dest: E cost: 4 nexthop: D)
+
+
+ROUTER D
+Initial Table
+
+Printing DVTable
+from D :  via A via B via C via D via E
+to   A : ' INF'' INF''   7'' INF''   3'
+to   B : ' INF'' INF''   3'' INF''   7'
+to   C : ' INF'' INF''   2'' INF''   6'
+to   D : ' INF'' INF''   4''   0''   4'
+to   E : ' INF'' INF''   6'' INF''   2'
+Printing Routing Table
+(D - dest: A cost: 3 nexthop: E)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 2 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 2 nexthop: E)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from D :  via A via B via C via D via E
+to   A : ' INF'' INF''   6'' INF''   3'
+to   B : ' INF'' INF''   3'' INF''   4'
+to   C : ' INF'' INF''   2'' INF''   5'
+to   D : ' INF'' INF''   4''   0''   4'
+to   E : ' INF'' INF''   5'' INF''   2'
+Printing Routing Table
+(D - dest: A cost: 3 nexthop: E)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 2 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 2 nexthop: E)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from D :  via A via B via C via D via E
+to   A : ' INF'' INF''   7'' INF''   3'
+to   B : ' INF'' INF''   3'' INF''   7'
+to   C : ' INF'' INF''   2'' INF''   6'
+to   D : ' INF'' INF''   4''   0''   4'
+to   E : ' INF'' INF''   6'' INF''   2'
+Printing Routing Table
+(D - dest: A cost: 3 nexthop: E)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 2 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 2 nexthop: E)
+
+
+ROUTER E
+Initial Table
+
+Printing DVTable
+from E :  via A via B via C via D via E
+to   A : '   1''  14'' INF''   5'' INF'
+to   B : '   7''   8'' INF''   5'' INF'
+to   C : '   6''   9'' INF''   4'' INF'
+to   D : '   4''  11'' INF''   2'' INF'
+to   E : '   2''  13'' INF''   4''   0'
+Printing Routing Table
+(E - dest: A cost: 1 nexthop: A)
+(E - dest: B cost: 5 nexthop: D)
+(E - dest: C cost: 4 nexthop: D)
+(E - dest: D cost: 2 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from E :  via A via B via C via D via E
+to   A : '   1''   5'' INF''   5'' INF'
+to   B : '   4''   2'' INF''   5'' INF'
+to   C : '   5''   3'' INF''   4'' INF'
+to   D : '   4''   5'' INF''   2'' INF'
+to   E : '   2''   4'' INF''   4''   0'
+Printing Routing Table
+(E - dest: A cost: 1 nexthop: A)
+(E - dest: B cost: 2 nexthop: B)
+(E - dest: C cost: 3 nexthop: B)
+(E - dest: D cost: 2 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from E :  via A via B via C via D via E
+to   A : '   1''  14'' INF''   5'' INF'
+to   B : '   7''   8'' INF''   5'' INF'
+to   C : '   6''   9'' INF''   4'' INF'
+to   D : '   4''  11'' INF''   2'' INF'
+to   E : '   2''  13'' INF''   4''   0'
+Printing Routing Table
+(E - dest: A cost: 1 nexthop: A)
+(E - dest: B cost: 5 nexthop: D)
+(E - dest: C cost: 4 nexthop: D)
+(E - dest: D cost: 2 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+
+************************************************************************************************
+TEST 1 WITH POISON REVERSE
+ROUTER A
+Initial Table
+
+Printing DVTable
+from A :  via A via B via C via D via E
+to   A : '   0''  13'' INF'' INF''   2'
+to   B : ' INF''   7'' INF'' INF''   6'
+to   C : ' INF''   8'' INF'' INF''   5'
+to   D : ' INF''  10'' INF'' INF''   3'
+to   E : ' INF''  12'' INF'' INF''   1'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 6 nexthop: E)
+(A - dest: C cost: 5 nexthop: E)
+(A - dest: D cost: 3 nexthop: E)
+(A - dest: E cost: 1 nexthop: E)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from A :  via A via B via C via D via E
+to   A : '   0''  10'' INF'' INF''   2'
+to   B : ' INF''   7'' INF'' INF''   3'
+to   C : ' INF''   8'' INF'' INF''   4'
+to   D : ' INF''  10'' INF'' INF''   3'
+to   E : ' INF''   9'' INF'' INF''   1'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 3 nexthop: E)
+(A - dest: C cost: 4 nexthop: E)
+(A - dest: D cost: 3 nexthop: E)
+(A - dest: E cost: 1 nexthop: E)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from A :  via A via B via C via D via E
+to   A : '   0''  13'' INF'' INF''   2'
+to   B : ' INF''   7'' INF'' INF''   6'
+to   C : ' INF''   8'' INF'' INF''   5'
+to   D : ' INF''  10'' INF'' INF''   3'
+to   E : ' INF''  12'' INF'' INF''   1'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 6 nexthop: E)
+(A - dest: C cost: 5 nexthop: E)
+(A - dest: D cost: 3 nexthop: E)
+(A - dest: E cost: 1 nexthop: E)
+
+
+ROUTER B
+Initial Table
+
+Printing DVTable
+from B :  via A via B via C via D via E
+to   A : '   7'' INF''   6'' INF''   9'
+to   B : '  13''   0''   2'' INF''  13'
+to   C : '  12'' INF''   1'' INF''  12'
+to   D : '  10'' INF''   3'' INF''  10'
+to   E : '   8'' INF''   5'' INF''   8'
+Printing Routing Table
+(B - dest: A cost: 6 nexthop: C)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 1 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 5 nexthop: C)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from B :  via A via B via C via D via E
+to   A : '   7'' INF'' INF'' INF''   3'
+to   B : '  10''   0''   2'' INF''   4'
+to   C : '  11'' INF''   1'' INF'' INF'
+to   D : '  10'' INF''   3'' INF''   4'
+to   E : '   8'' INF'' INF'' INF''   2'
+Printing Routing Table
+(B - dest: A cost: 3 nexthop: E)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 1 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 2 nexthop: E)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from B :  via A via B via C via D via E
+to   A : '   7'' INF''   6'' INF''   9'
+to   B : '  13''   0''   2'' INF''  13'
+to   C : '  12'' INF''   1'' INF''  12'
+to   D : '  10'' INF''   3'' INF''  10'
+to   E : '   8'' INF''   5'' INF''   8'
+Printing Routing Table
+(B - dest: A cost: 6 nexthop: C)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 1 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 5 nexthop: C)
+
+
+ROUTER C
+Initial Table
+
+Printing DVTable
+from C :  via A via B via C via D via E
+to   A : ' INF'' INF'' INF''   5'' INF'
+to   B : ' INF''   1'' INF'' INF'' INF'
+to   C : ' INF''   2''   0''   4'' INF'
+to   D : ' INF'' INF'' INF''   2'' INF'
+to   E : ' INF'' INF'' INF''   4'' INF'
+Printing Routing Table
+(C - dest: A cost: 5 nexthop: D)
+(C - dest: B cost: 1 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 2 nexthop: D)
+(C - dest: E cost: 4 nexthop: D)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from C :  via A via B via C via D via E
+to   A : ' INF''   4'' INF''   5'' INF'
+to   B : ' INF''   1'' INF'' INF'' INF'
+to   C : ' INF''   2''   0''   4'' INF'
+to   D : ' INF'' INF'' INF''   2'' INF'
+to   E : ' INF''   3'' INF''   4'' INF'
+Printing Routing Table
+(C - dest: A cost: 4 nexthop: B)
+(C - dest: B cost: 1 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 2 nexthop: D)
+(C - dest: E cost: 3 nexthop: B)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from C :  via A via B via C via D via E
+to   A : ' INF'' INF'' INF''   5'' INF'
+to   B : ' INF''   1'' INF'' INF'' INF'
+to   C : ' INF''   2''   0''   4'' INF'
+to   D : ' INF'' INF'' INF''   2'' INF'
+to   E : ' INF'' INF'' INF''   4'' INF'
+Printing Routing Table
+(C - dest: A cost: 5 nexthop: D)
+(C - dest: B cost: 1 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 2 nexthop: D)
+(C - dest: E cost: 4 nexthop: D)
+
+
+ROUTER D
+Initial Table
+
+Printing DVTable
+from D :  via A via B via C via D via E
+to   A : ' INF'' INF'' INF'' INF''   3'
+to   B : ' INF'' INF''   3'' INF'' INF'
+to   C : ' INF'' INF''   2'' INF'' INF'
+to   D : ' INF'' INF''   4''   0''   4'
+to   E : ' INF'' INF'' INF'' INF''   2'
+Printing Routing Table
+(D - dest: A cost: 3 nexthop: E)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 2 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 2 nexthop: E)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from D :  via A via B via C via D via E
+to   A : ' INF'' INF''   6'' INF''   3'
+to   B : ' INF'' INF''   3'' INF''   4'
+to   C : ' INF'' INF''   2'' INF''   5'
+to   D : ' INF'' INF''   4''   0''   4'
+to   E : ' INF'' INF''   5'' INF''   2'
+Printing Routing Table
+(D - dest: A cost: 3 nexthop: E)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 2 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 2 nexthop: E)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from D :  via A via B via C via D via E
+to   A : ' INF'' INF'' INF'' INF''   3'
+to   B : ' INF'' INF''   3'' INF'' INF'
+to   C : ' INF'' INF''   2'' INF'' INF'
+to   D : ' INF'' INF''   4''   0''   4'
+to   E : ' INF'' INF'' INF'' INF''   2'
+Printing Routing Table
+(D - dest: A cost: 3 nexthop: E)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 2 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 2 nexthop: E)
+
+
+ROUTER E
+Initial Table
+
+Printing DVTable
+from E :  via A via B via C via D via E
+to   A : '   1''  14'' INF'' INF'' INF'
+to   B : ' INF''   8'' INF''   5'' INF'
+to   C : ' INF''   9'' INF''   4'' INF'
+to   D : ' INF''  11'' INF''   2'' INF'
+to   E : '   2''  13'' INF''   4''   0'
+Printing Routing Table
+(E - dest: A cost: 1 nexthop: A)
+(E - dest: B cost: 5 nexthop: D)
+(E - dest: C cost: 4 nexthop: D)
+(E - dest: D cost: 2 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+
+After BE link cost decreases to 2
+
+Printing DVTable
+from E :  via A via B via C via D via E
+to   A : '   1'' INF'' INF'' INF'' INF'
+to   B : ' INF''   2'' INF''   5'' INF'
+to   C : ' INF''   3'' INF''   4'' INF'
+to   D : ' INF''   5'' INF''   2'' INF'
+to   E : '   2''   4'' INF''   4''   0'
+Printing Routing Table
+(E - dest: A cost: 1 nexthop: A)
+(E - dest: B cost: 2 nexthop: B)
+(E - dest: C cost: 3 nexthop: B)
+(E - dest: D cost: 2 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+
+After BE link cost is increases back to original 8
+
+Printing DVTable
+from E :  via A via B via C via D via E
+to   A : '   1''  14'' INF'' INF'' INF'
+to   B : ' INF''   8'' INF''   5'' INF'
+to   C : ' INF''   9'' INF''   4'' INF'
+to   D : ' INF''  11'' INF''   2'' INF'
+to   E : '   2''  13'' INF''   4''   0'
+Printing Routing Table
+(E - dest: A cost: 1 nexthop: A)
+(E - dest: B cost: 5 nexthop: D)
+(E - dest: C cost: 4 nexthop: D)
+(E - dest: D cost: 2 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+
+************************************************************************************************
+TEST 2 WITH POISON REVERSE
+ROUTER A
+Initial Table
+
+Printing DVTable
+from A :  via A via B via C via D via E via F via G via H
+to   A : '   0''   2''   7'' INF'' INF'' INF'' INF'' INF'
+to   B : ' INF''   1''   6'' INF'' INF'' INF'' INF'' INF'
+to   C : ' INF''   3''   4'' INF'' INF'' INF'' INF'' INF'
+to   D : ' INF''   4''   5'' INF'' INF'' INF'' INF'' INF'
+to   E : ' INF''   5''   6'' INF'' INF'' INF'' INF'' INF'
+to   F : ' INF''   6''   7'' INF'' INF'' INF'' INF'' INF'
+to   G : ' INF''   5''   6'' INF'' INF'' INF'' INF'' INF'
+to   H : ' INF''   3''   8'' INF'' INF'' INF'' INF'' INF'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 1 nexthop: B)
+(A - dest: C cost: 3 nexthop: B)
+(A - dest: D cost: 4 nexthop: B)
+(A - dest: E cost: 5 nexthop: B)
+(A - dest: F cost: 6 nexthop: B)
+(A - dest: G cost: 5 nexthop: B)
+(A - dest: H cost: 3 nexthop: B)
+
+After GH link cost decreases to 1
+
+Printing DVTable
+from A :  via A via B via C via D via E via F via G via H
+to   A : '   0''   2''   7'' INF'' INF'' INF'' INF'' INF'
+to   B : ' INF''   1''   6'' INF'' INF'' INF'' INF'' INF'
+to   C : ' INF''   3''   4'' INF'' INF'' INF'' INF'' INF'
+to   D : ' INF''   4''   5'' INF'' INF'' INF'' INF'' INF'
+to   E : ' INF''   5''   6'' INF'' INF'' INF'' INF'' INF'
+to   F : ' INF''   6''   7'' INF'' INF'' INF'' INF'' INF'
+to   G : ' INF''   4''   6'' INF'' INF'' INF'' INF'' INF'
+to   H : ' INF''   3''   7'' INF'' INF'' INF'' INF'' INF'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 1 nexthop: B)
+(A - dest: C cost: 3 nexthop: B)
+(A - dest: D cost: 4 nexthop: B)
+(A - dest: E cost: 5 nexthop: B)
+(A - dest: F cost: 6 nexthop: B)
+(A - dest: G cost: 4 nexthop: B)
+(A - dest: H cost: 3 nexthop: B)
+
+After GH link cost increases back to original 14
+
+Printing DVTable
+from A :  via A via B via C via D via E via F via G via H
+to   A : '   0''   2''   7'' INF'' INF'' INF'' INF'' INF'
+to   B : ' INF''   1''   6'' INF'' INF'' INF'' INF'' INF'
+to   C : ' INF''   3''   4'' INF'' INF'' INF'' INF'' INF'
+to   D : ' INF''   4''   5'' INF'' INF'' INF'' INF'' INF'
+to   E : ' INF''   5''   6'' INF'' INF'' INF'' INF'' INF'
+to   F : ' INF''   6''   7'' INF'' INF'' INF'' INF'' INF'
+to   G : ' INF''   5''   6'' INF'' INF'' INF'' INF'' INF'
+to   H : ' INF''   3''   8'' INF'' INF'' INF'' INF'' INF'
+Printing Routing Table
+(A - dest: A cost: 0 nexthop: A)
+(A - dest: B cost: 1 nexthop: B)
+(A - dest: C cost: 3 nexthop: B)
+(A - dest: D cost: 4 nexthop: B)
+(A - dest: E cost: 5 nexthop: B)
+(A - dest: F cost: 6 nexthop: B)
+(A - dest: G cost: 5 nexthop: B)
+(A - dest: H cost: 3 nexthop: B)
+
+
+ROUTER B
+Initial Table
+
+Printing DVTable
+from B :  via A via B via C via D via E via F via G via H
+to   A : '   1'' INF'' INF''  13'' INF'' INF'' INF'' INF'
+to   B : '   2''   0''   4''  12'' INF'' INF''   8''   4'
+to   C : ' INF'' INF''   2''  10'' INF'' INF''   6'' INF'
+to   D : ' INF'' INF''   3''   9'' INF'' INF''   5'' INF'
+to   E : ' INF'' INF''   4''  10'' INF'' INF''   6'' INF'
+to   F : ' INF'' INF''   5''  11'' INF'' INF''   7'' INF'
+to   G : ' INF'' INF''   4''  10'' INF'' INF''   4'' INF'
+to   H : ' INF'' INF'' INF''  14'' INF'' INF'' INF''   2'
+Printing Routing Table
+(B - dest: A cost: 1 nexthop: A)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 2 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 4 nexthop: C)
+(B - dest: F cost: 5 nexthop: C)
+(B - dest: G cost: 4 nexthop: C)
+(B - dest: H cost: 2 nexthop: H)
+
+After GH link cost decreases to 1
+
+Printing DVTable
+from B :  via A via B via C via D via E via F via G via H
+to   A : '   1'' INF'' INF''  13'' INF'' INF''   8'' INF'
+to   B : '   2''   0''   4''  12'' INF'' INF''   7''   4'
+to   C : ' INF'' INF''   2''  10'' INF'' INF''   6''   5'
+to   D : ' INF'' INF''   3''   9'' INF'' INF''   5''   4'
+to   E : ' INF'' INF''   4''  10'' INF'' INF''   6''   5'
+to   F : ' INF'' INF''   5''  11'' INF'' INF''   7''   6'
+to   G : ' INF'' INF''   4''  10'' INF'' INF''   4''   3'
+to   H : ' INF'' INF''   5''  11'' INF'' INF''   5''   2'
+Printing Routing Table
+(B - dest: A cost: 1 nexthop: A)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 2 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 4 nexthop: C)
+(B - dest: F cost: 5 nexthop: C)
+(B - dest: G cost: 3 nexthop: H)
+(B - dest: H cost: 2 nexthop: H)
+
+After GH link cost increases back to original 14
+
+Printing DVTable
+from B :  via A via B via C via D via E via F via G via H
+to   A : '   1'' INF'' INF''  13'' INF'' INF'' INF'' INF'
+to   B : '   2''   0''   4''  12'' INF'' INF''   8''   4'
+to   C : ' INF'' INF''   2''  10'' INF'' INF''   6'' INF'
+to   D : ' INF'' INF''   3''   9'' INF'' INF''   5'' INF'
+to   E : ' INF'' INF''   4''  10'' INF'' INF''   6'' INF'
+to   F : ' INF'' INF''   5''  11'' INF'' INF''   7'' INF'
+to   G : ' INF'' INF''   4''  10'' INF'' INF''   4'' INF'
+to   H : ' INF'' INF'' INF''  14'' INF'' INF'' INF''   2'
+Printing Routing Table
+(B - dest: A cost: 1 nexthop: A)
+(B - dest: B cost: 0 nexthop: B)
+(B - dest: C cost: 2 nexthop: C)
+(B - dest: D cost: 3 nexthop: C)
+(B - dest: E cost: 4 nexthop: C)
+(B - dest: F cost: 5 nexthop: C)
+(B - dest: G cost: 4 nexthop: C)
+(B - dest: H cost: 2 nexthop: H)
+
+
+ROUTER C
+Initial Table
+
+Printing DVTable
+from C :  via A via B via C via D via E via F via G via H
+to   A : '   4''   3'' INF'' INF''   8'' INF'' INF'' INF'
+to   B : '   5''   2'' INF'' INF''   7'' INF'' INF'' INF'
+to   C : '   7''   4''   0''   2''   5'' INF'' INF'' INF'
+to   D : '   8'' INF'' INF''   1''   4'' INF'' INF'' INF'
+to   E : '   9'' INF'' INF''   2''   3'' INF'' INF'' INF'
+to   F : '  10'' INF'' INF''   3''   4'' INF'' INF'' INF'
+to   G : '   9'' INF'' INF''   2''   5'' INF'' INF'' INF'
+to   H : '   7''   4'' INF'' INF''   9'' INF'' INF'' INF'
+Printing Routing Table
+(C - dest: A cost: 3 nexthop: B)
+(C - dest: B cost: 2 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 1 nexthop: D)
+(C - dest: E cost: 2 nexthop: D)
+(C - dest: F cost: 3 nexthop: D)
+(C - dest: G cost: 2 nexthop: D)
+(C - dest: H cost: 4 nexthop: B)
+
+After GH link cost decreases to 1
+
+Printing DVTable
+from C :  via A via B via C via D via E via F via G via H
+to   A : '   4''   3'' INF'' INF''   8'' INF'' INF'' INF'
+to   B : '   5''   2'' INF'' INF''   7'' INF'' INF'' INF'
+to   C : '   7''   4''   0''   2''   5'' INF'' INF'' INF'
+to   D : '   8'' INF'' INF''   1''   4'' INF'' INF'' INF'
+to   E : '   9'' INF'' INF''   2''   3'' INF'' INF'' INF'
+to   F : '  10'' INF'' INF''   3''   4'' INF'' INF'' INF'
+to   G : '   8''   5'' INF''   2''   5'' INF'' INF'' INF'
+to   H : '   7''   4'' INF''   3''   6'' INF'' INF'' INF'
+Printing Routing Table
+(C - dest: A cost: 3 nexthop: B)
+(C - dest: B cost: 2 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 1 nexthop: D)
+(C - dest: E cost: 2 nexthop: D)
+(C - dest: F cost: 3 nexthop: D)
+(C - dest: G cost: 2 nexthop: D)
+(C - dest: H cost: 3 nexthop: D)
+
+After GH link cost increases back to original 14
+
+Printing DVTable
+from C :  via A via B via C via D via E via F via G via H
+to   A : '   4''   3'' INF'' INF''   8'' INF'' INF'' INF'
+to   B : '   5''   2'' INF'' INF''   7'' INF'' INF'' INF'
+to   C : '   7''   4''   0''   2''   5'' INF'' INF'' INF'
+to   D : '   8'' INF'' INF''   1''   4'' INF'' INF'' INF'
+to   E : '   9'' INF'' INF''   2''   3'' INF'' INF'' INF'
+to   F : '  10'' INF'' INF''   3''   4'' INF'' INF'' INF'
+to   G : '   9'' INF'' INF''   2''   5'' INF'' INF'' INF'
+to   H : '   7''   4'' INF'' INF''   9'' INF'' INF'' INF'
+Printing Routing Table
+(C - dest: A cost: 3 nexthop: B)
+(C - dest: B cost: 2 nexthop: B)
+(C - dest: C cost: 0 nexthop: C)
+(C - dest: D cost: 1 nexthop: D)
+(C - dest: E cost: 2 nexthop: D)
+(C - dest: F cost: 3 nexthop: D)
+(C - dest: G cost: 2 nexthop: D)
+(C - dest: H cost: 4 nexthop: B)
+
+
+ROUTER D
+Initial Table
+
+Printing DVTable
+from D :  via A via B via C via D via E via F via G via H
+to   A : ' INF''  10''   4'' INF'' INF''   9'' INF'' INF'
+to   B : ' INF''   9''   3'' INF'' INF''   8'' INF'' INF'
+to   C : ' INF''  11''   1'' INF'' INF''   6'' INF'' INF'
+to   D : ' INF''  12''   2''   0''   2''   5''   2'' INF'
+to   E : ' INF''  13'' INF'' INF''   1''   4'' INF'' INF'
+to   F : ' INF''  14'' INF'' INF''   2''   3'' INF'' INF'
+to   G : ' INF''  13'' INF'' INF'' INF''   6''   1'' INF'
+to   H : ' INF''  11''   5'' INF'' INF''  10'' INF'' INF'
+Printing Routing Table
+(D - dest: A cost: 4 nexthop: C)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 1 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 1 nexthop: E)
+(D - dest: F cost: 2 nexthop: E)
+(D - dest: G cost: 1 nexthop: G)
+(D - dest: H cost: 5 nexthop: C)
+
+After GH link cost decreases to 1
+
+Printing DVTable
+from D :  via A via B via C via D via E via F via G via H
+to   A : ' INF''  10''   4'' INF'' INF''   9''   5'' INF'
+to   B : ' INF''   9''   3'' INF'' INF''   8''   4'' INF'
+to   C : ' INF''  11''   1'' INF'' INF''   6'' INF'' INF'
+to   D : ' INF''  12''   2''   0''   2''   5''   2'' INF'
+to   E : ' INF''  13'' INF'' INF''   1''   4'' INF'' INF'
+to   F : ' INF''  14'' INF'' INF''   2''   3'' INF'' INF'
+to   G : ' INF''  12'' INF'' INF'' INF''   6''   1'' INF'
+to   H : ' INF''  11'' INF'' INF'' INF''   7''   2'' INF'
+Printing Routing Table
+(D - dest: A cost: 4 nexthop: C)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 1 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 1 nexthop: E)
+(D - dest: F cost: 2 nexthop: E)
+(D - dest: G cost: 1 nexthop: G)
+(D - dest: H cost: 2 nexthop: G)
+
+After GH link cost increases back to original 14
+
+Printing DVTable
+from D :  via A via B via C via D via E via F via G via H
+to   A : ' INF''  10''   4'' INF'' INF''   9'' INF'' INF'
+to   B : ' INF''   9''   3'' INF'' INF''   8'' INF'' INF'
+to   C : ' INF''  11''   1'' INF'' INF''   6'' INF'' INF'
+to   D : ' INF''  12''   2''   0''   2''   5''   2'' INF'
+to   E : ' INF''  13'' INF'' INF''   1''   4'' INF'' INF'
+to   F : ' INF''  14'' INF'' INF''   2''   3'' INF'' INF'
+to   G : ' INF''  13'' INF'' INF'' INF''   6''   1'' INF'
+to   H : ' INF''  11''   5'' INF'' INF''  10'' INF'' INF'
+Printing Routing Table
+(D - dest: A cost: 4 nexthop: C)
+(D - dest: B cost: 3 nexthop: C)
+(D - dest: C cost: 1 nexthop: C)
+(D - dest: D cost: 0 nexthop: D)
+(D - dest: E cost: 1 nexthop: E)
+(D - dest: F cost: 2 nexthop: E)
+(D - dest: G cost: 1 nexthop: G)
+(D - dest: H cost: 5 nexthop: C)
+
+
+ROUTER E
+Initial Table
+
+Printing DVTable
+from E :  via A via B via C via D via E via F via G via H
+to   A : ' INF'' INF''   6''   5'' INF'' INF'' INF'' INF'
+to   B : ' INF'' INF''   5''   4'' INF'' INF'' INF'' INF'
+to   C : ' INF'' INF''   3''   2'' INF'' INF'' INF'' INF'
+to   D : ' INF'' INF''   4''   1'' INF'' INF'' INF'' INF'
+to   E : ' INF'' INF''   5''   2''   0''   2'' INF'' INF'
+to   F : ' INF'' INF''   6'' INF'' INF''   1'' INF'' INF'
+to   G : ' INF'' INF''   5''   2'' INF'' INF'' INF'' INF'
+to   H : ' INF'' INF''   7''   6'' INF'' INF'' INF'' INF'
+Printing Routing Table
+(E - dest: A cost: 5 nexthop: D)
+(E - dest: B cost: 4 nexthop: D)
+(E - dest: C cost: 2 nexthop: D)
+(E - dest: D cost: 1 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+(E - dest: F cost: 1 nexthop: F)
+(E - dest: G cost: 2 nexthop: D)
+(E - dest: H cost: 6 nexthop: D)
+
+After GH link cost decreases to 1
+
+Printing DVTable
+from E :  via A via B via C via D via E via F via G via H
+to   A : ' INF'' INF''   6''   5'' INF'' INF'' INF'' INF'
+to   B : ' INF'' INF''   5''   4'' INF'' INF'' INF'' INF'
+to   C : ' INF'' INF''   3''   2'' INF'' INF'' INF'' INF'
+to   D : ' INF'' INF''   4''   1'' INF'' INF'' INF'' INF'
+to   E : ' INF'' INF''   5''   2''   0''   2'' INF'' INF'
+to   F : ' INF'' INF''   6'' INF'' INF''   1'' INF'' INF'
+to   G : ' INF'' INF''   5''   2'' INF'' INF'' INF'' INF'
+to   H : ' INF'' INF''   6''   3'' INF'' INF'' INF'' INF'
+Printing Routing Table
+(E - dest: A cost: 5 nexthop: D)
+(E - dest: B cost: 4 nexthop: D)
+(E - dest: C cost: 2 nexthop: D)
+(E - dest: D cost: 1 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+(E - dest: F cost: 1 nexthop: F)
+(E - dest: G cost: 2 nexthop: D)
+(E - dest: H cost: 3 nexthop: D)
+
+After GH link cost increases back to original 14
+
+Printing DVTable
+from E :  via A via B via C via D via E via F via G via H
+to   A : ' INF'' INF''   6''   5'' INF'' INF'' INF'' INF'
+to   B : ' INF'' INF''   5''   4'' INF'' INF'' INF'' INF'
+to   C : ' INF'' INF''   3''   2'' INF'' INF'' INF'' INF'
+to   D : ' INF'' INF''   4''   1'' INF'' INF'' INF'' INF'
+to   E : ' INF'' INF''   5''   2''   0''   2'' INF'' INF'
+to   F : ' INF'' INF''   6'' INF'' INF''   1'' INF'' INF'
+to   G : ' INF'' INF''   5''   2'' INF'' INF'' INF'' INF'
+to   H : ' INF'' INF''   7''   6'' INF'' INF'' INF'' INF'
+Printing Routing Table
+(E - dest: A cost: 5 nexthop: D)
+(E - dest: B cost: 4 nexthop: D)
+(E - dest: C cost: 2 nexthop: D)
+(E - dest: D cost: 1 nexthop: D)
+(E - dest: E cost: 0 nexthop: E)
+(E - dest: F cost: 1 nexthop: F)
+(E - dest: G cost: 2 nexthop: D)
+(E - dest: H cost: 6 nexthop: D)
+
+
+ROUTER F
+Initial Table
+
+Printing DVTable
+from F :  via A via B via C via D via E via F via G via H
+to   A : ' INF'' INF'' INF''   7''   6'' INF''  11'' INF'
+to   B : ' INF'' INF'' INF''   6''   5'' INF''  10'' INF'
+to   C : ' INF'' INF'' INF''   4''   3'' INF''   8'' INF'
+to   D : ' INF'' INF'' INF''   3''   2'' INF''   7'' INF'
+to   E : ' INF'' INF'' INF''   4''   1'' INF''   8'' INF'
+to   F : ' INF'' INF'' INF''   5''   2''   0''   9'' INF'
+to   G : ' INF'' INF'' INF''   4''   3'' INF''   6'' INF'
+to   H : ' INF'' INF'' INF''   8''   7'' INF''  12'' INF'
+Printing Routing Table
+(F - dest: A cost: 6 nexthop: E)
+(F - dest: B cost: 5 nexthop: E)
+(F - dest: C cost: 3 nexthop: E)
+(F - dest: D cost: 2 nexthop: E)
+(F - dest: E cost: 1 nexthop: E)
+(F - dest: F cost: 0 nexthop: F)
+(F - dest: G cost: 3 nexthop: E)
+(F - dest: H cost: 7 nexthop: E)
+
+After GH link cost decreases to 1
+
+Printing DVTable
+from F :  via A via B via C via D via E via F via G via H
+to   A : ' INF'' INF'' INF''   7''   6'' INF''  10'' INF'
+to   B : ' INF'' INF'' INF''   6''   5'' INF''   9'' INF'
+to   C : ' INF'' INF'' INF''   4''   3'' INF''   8'' INF'
+to   D : ' INF'' INF'' INF''   3''   2'' INF''   7'' INF'
+to   E : ' INF'' INF'' INF''   4''   1'' INF''   8'' INF'
+to   F : ' INF'' INF'' INF''   5''   2''   0''   9'' INF'
+to   G : ' INF'' INF'' INF''   4''   3'' INF''   6'' INF'
+to   H : ' INF'' INF'' INF''   5''   4'' INF''   7'' INF'
+Printing Routing Table
+(F - dest: A cost: 6 nexthop: E)
+(F - dest: B cost: 5 nexthop: E)
+(F - dest: C cost: 3 nexthop: E)
+(F - dest: D cost: 2 nexthop: E)
+(F - dest: E cost: 1 nexthop: E)
+(F - dest: F cost: 0 nexthop: F)
+(F - dest: G cost: 3 nexthop: E)
+(F - dest: H cost: 4 nexthop: E)
+
+After GH link cost increases back to original 14
+
+Printing DVTable
+from F :  via A via B via C via D via E via F via G via H
+to   A : ' INF'' INF'' INF''   7''   6'' INF''  11'' INF'
+to   B : ' INF'' INF'' INF''   6''   5'' INF''  10'' INF'
+to   C : ' INF'' INF'' INF''   4''   3'' INF''   8'' INF'
+to   D : ' INF'' INF'' INF''   3''   2'' INF''   7'' INF'
+to   E : ' INF'' INF'' INF''   4''   1'' INF''   8'' INF'
+to   F : ' INF'' INF'' INF''   5''   2''   0''   9'' INF'
+to   G : ' INF'' INF'' INF''   4''   3'' INF''   6'' INF'
+to   H : ' INF'' INF'' INF''   8''   7'' INF''  12'' INF'
+Printing Routing Table
+(F - dest: A cost: 6 nexthop: E)
+(F - dest: B cost: 5 nexthop: E)
+(F - dest: C cost: 3 nexthop: E)
+(F - dest: D cost: 2 nexthop: E)
+(F - dest: E cost: 1 nexthop: E)
+(F - dest: F cost: 0 nexthop: F)
+(F - dest: G cost: 3 nexthop: E)
+(F - dest: H cost: 7 nexthop: E)
+
+
+ROUTER G
+Initial Table
+
+Printing DVTable
+from G :  via A via B via C via D via E via F via G via H
+to   A : ' INF''   5'' INF''   5'' INF''  12'' INF''  17'
+to   B : ' INF''   4'' INF''   4'' INF''  11'' INF''  16'
+to   C : ' INF''   6'' INF''   2'' INF''   9'' INF''  18'
+to   D : ' INF''   7'' INF''   1'' INF''   8'' INF''  19'
+to   E : ' INF''   8'' INF''   2'' INF''   7'' INF''  20'
+to   F : ' INF''   9'' INF''   3'' INF''   6'' INF''  21'
+to   G : ' INF''   8'' INF''   2'' INF''   9''   0''  20'
+to   H : ' INF''   6'' INF''   6'' INF''  13'' INF''  14'
+Printing Routing Table
+(G - dest: A cost: 5 nexthop: D)
+(G - dest: B cost: 4 nexthop: D)
+(G - dest: C cost: 2 nexthop: D)
+(G - dest: D cost: 1 nexthop: D)
+(G - dest: E cost: 2 nexthop: D)
+(G - dest: F cost: 3 nexthop: D)
+(G - dest: G cost: 0 nexthop: G)
+(G - dest: H cost: 6 nexthop: D)
+
+After GH link cost decreases to 1
+
+Printing DVTable
+from G :  via A via B via C via D via E via F via G via H
+to   A : ' INF''   5'' INF''   5'' INF''  12'' INF''   4'
+to   B : ' INF''   4'' INF''   4'' INF''  11'' INF''   3'
+to   C : ' INF''   6'' INF''   2'' INF''   9'' INF'' INF'
+to   D : ' INF''   7'' INF''   1'' INF''   8'' INF'' INF'
+to   E : ' INF''   8'' INF''   2'' INF''   7'' INF'' INF'
+to   F : ' INF''   9'' INF''   3'' INF''   6'' INF'' INF'
+to   G : ' INF''   7'' INF''   2'' INF''   9''   0''   2'
+to   H : ' INF''   6'' INF'' INF'' INF''  10'' INF''   1'
+Printing Routing Table
+(G - dest: A cost: 4 nexthop: H)
+(G - dest: B cost: 3 nexthop: H)
+(G - dest: C cost: 2 nexthop: D)
+(G - dest: D cost: 1 nexthop: D)
+(G - dest: E cost: 2 nexthop: D)
+(G - dest: F cost: 3 nexthop: D)
+(G - dest: G cost: 0 nexthop: G)
+(G - dest: H cost: 1 nexthop: H)
+
+After GH link cost increases back to original 14
+
+Printing DVTable
+from G :  via A via B via C via D via E via F via G via H
+to   A : ' INF''   5'' INF''   5'' INF''  12'' INF''  17'
+to   B : ' INF''   4'' INF''   4'' INF''  11'' INF''  16'
+to   C : ' INF''   6'' INF''   2'' INF''   9'' INF''  18'
+to   D : ' INF''   7'' INF''   1'' INF''   8'' INF''  19'
+to   E : ' INF''   8'' INF''   2'' INF''   7'' INF''  20'
+to   F : ' INF''   9'' INF''   3'' INF''   6'' INF''  21'
+to   G : ' INF''   8'' INF''   2'' INF''   9''   0''  20'
+to   H : ' INF''   6'' INF''   6'' INF''  13'' INF''  14'
+Printing Routing Table
+(G - dest: A cost: 5 nexthop: D)
+(G - dest: B cost: 4 nexthop: D)
+(G - dest: C cost: 2 nexthop: D)
+(G - dest: D cost: 1 nexthop: D)
+(G - dest: E cost: 2 nexthop: D)
+(G - dest: F cost: 3 nexthop: D)
+(G - dest: G cost: 0 nexthop: G)
+(G - dest: H cost: 6 nexthop: D)
+
+
+ROUTER H
+Initial Table
+
+Printing DVTable
+from H :  via A via B via C via D via E via F via G via H
+to   A : ' INF''   3'' INF'' INF'' INF'' INF''  19'' INF'
+to   B : ' INF''   2'' INF'' INF'' INF'' INF''  18'' INF'
+to   C : ' INF''   4'' INF'' INF'' INF'' INF''  16'' INF'
+to   D : ' INF''   5'' INF'' INF'' INF'' INF''  15'' INF'
+to   E : ' INF''   6'' INF'' INF'' INF'' INF''  16'' INF'
+to   F : ' INF''   7'' INF'' INF'' INF'' INF''  17'' INF'
+to   G : ' INF''   6'' INF'' INF'' INF'' INF''  14'' INF'
+to   H : ' INF''   4'' INF'' INF'' INF'' INF''  20''   0'
+Printing Routing Table
+(H - dest: A cost: 3 nexthop: B)
+(H - dest: B cost: 2 nexthop: B)
+(H - dest: C cost: 4 nexthop: B)
+(H - dest: D cost: 5 nexthop: B)
+(H - dest: E cost: 6 nexthop: B)
+(H - dest: F cost: 7 nexthop: B)
+(H - dest: G cost: 6 nexthop: B)
+(H - dest: H cost: 0 nexthop: H)
+
+After GH link cost decreases to 1
+
+Printing DVTable
+from H :  via A via B via C via D via E via F via G via H
+to   A : ' INF''   3'' INF'' INF'' INF'' INF'' INF'' INF'
+to   B : ' INF''   2'' INF'' INF'' INF'' INF'' INF'' INF'
+to   C : ' INF''   4'' INF'' INF'' INF'' INF''   3'' INF'
+to   D : ' INF''   5'' INF'' INF'' INF'' INF''   2'' INF'
+to   E : ' INF''   6'' INF'' INF'' INF'' INF''   3'' INF'
+to   F : ' INF''   7'' INF'' INF'' INF'' INF''   4'' INF'
+to   G : ' INF'' INF'' INF'' INF'' INF'' INF''   1'' INF'
+to   H : ' INF''   4'' INF'' INF'' INF'' INF''   2''   0'
+Printing Routing Table
+(H - dest: A cost: 3 nexthop: B)
+(H - dest: B cost: 2 nexthop: B)
+(H - dest: C cost: 3 nexthop: G)
+(H - dest: D cost: 2 nexthop: G)
+(H - dest: E cost: 3 nexthop: G)
+(H - dest: F cost: 4 nexthop: G)
+(H - dest: G cost: 1 nexthop: G)
+(H - dest: H cost: 0 nexthop: H)
+
+After GH link cost increases back to original 14
+
+Printing DVTable
+from H :  via A via B via C via D via E via F via G via H
+to   A : ' INF''   3'' INF'' INF'' INF'' INF''  19'' INF'
+to   B : ' INF''   2'' INF'' INF'' INF'' INF''  18'' INF'
+to   C : ' INF''   4'' INF'' INF'' INF'' INF''  16'' INF'
+to   D : ' INF''   5'' INF'' INF'' INF'' INF''  15'' INF'
+to   E : ' INF''   6'' INF'' INF'' INF'' INF''  16'' INF'
+to   F : ' INF''   7'' INF'' INF'' INF'' INF''  17'' INF'
+to   G : ' INF''   6'' INF'' INF'' INF'' INF''  14'' INF'
+to   H : ' INF''   4'' INF'' INF'' INF'' INF''  20''   0'
+Printing Routing Table
+(H - dest: A cost: 3 nexthop: B)
+(H - dest: B cost: 2 nexthop: B)
+(H - dest: C cost: 4 nexthop: B)
+(H - dest: D cost: 5 nexthop: B)
+(H - dest: E cost: 6 nexthop: B)
+(H - dest: F cost: 7 nexthop: B)
+(H - dest: G cost: 6 nexthop: B)
+(H - dest: H cost: 0 nexthop: H)
+
