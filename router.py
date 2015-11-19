@@ -100,8 +100,7 @@ def dvsimulator(argv):
     dvtable = {}
     # setup sockets for read/write
     baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
-    # loopTime = 30
-    loopTime = 1
+    loopTime = 30
     while 1:
         start = time.time()
         baseList = list(baseDict.values())
@@ -226,7 +225,7 @@ def PrintRoutingTable():
 
 # prints a routing table entry
 def PrintLinkChanges(dest, cost, nexthop):
-    print(SelfName, "- dest:", dest, "cost:", str(cost), "nexthop:",nexthop)
+    print("Link Cost Change (", SelfName, "- dest:", dest, "cost:", str(cost), "nexthop:", nexthop, ")")
 
 # updates DV Table with message received from router From
 def DVUpdateMessage(From, Message):
