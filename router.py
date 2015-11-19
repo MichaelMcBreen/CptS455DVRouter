@@ -109,15 +109,14 @@ def dvsimulator(argv):
         rReady, wReady, eReady = select.select(baseList + sockList, sockList, sockList, loopTime)
         # timeout no sockets to read from
         if len(rReady) == 0:
-            a = 1
-            # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!print ("Timeout Error: No available sockets")
+            print ("Timeout Error: No available sockets")
         else:
             # read update messages from baseport and neighbor sockets
             readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict)
         # send update messages to neighbor sockets
         sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict)
         # print the DV Table
-        # PrintDVTable()
+        PrintDVTable()
         # timer to loop every 30 seconds
         end = time.time()
         t = loopTime - end + start
@@ -136,14 +135,14 @@ def readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict):
         if sockDict[rName] in rReady:
             msg = recieve(sockDict[rName])
             if len(msg) > 0:
-                #!!!!!!!!!!!!!!!!!!!!print('Recv MSG ', rName, ' : ', msg)
+                print('Recv MSG ', rName, ' : ', msg)
                 DVUpdateMessage(rName, msg)
     # read from baseport sockets
     for rName in baseDict:
         if baseDict[rName] in rReady:
             msg = recieve(baseDict[rName])
             if len(msg) > 0:
-                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!print('Recv MSG ', rName, ' : ', msg)
+                print('Recv MSG ', rName, ' : ', msg)
                 DVUpdateMessage(rName, msg)
 
 # send DVTable update message to neighbors
@@ -153,7 +152,7 @@ def sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict):
             message = BuildUMessagePoison(rName)
         else:
             message = BuildUMessage()
-        #!!!!!!!!!!!!!!!!!!!print('Send To ', rName, ' : ', message)
+        print('Send To ', rName, ' : ', message)
         sockDict[rName].send(message.encode())
         resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
 
@@ -250,7 +249,7 @@ def DVUpdateMessage(From, Message):
                 DVTable[dest][From] = 64
             if(DVTable[dest][From] != currentValue):
                 b = 1
-                #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!PrintLinkChanges(dest, DVTable[dest][From], From)
+                PrintLinkChanges(dest, DVTable[dest][From], From)
     # handle L and P messages
     else:
         ParseMessage(Message)
