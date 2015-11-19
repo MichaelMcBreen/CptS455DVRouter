@@ -30,7 +30,6 @@ def readrouters(testname):
     table = {}
     for line in lines:
         if line[0]=='#': continue
-        #print line
         words = line.split(" ")    
         table[words[0]] = RouterInfo(words[1], int(words[2]))
 
@@ -98,13 +97,10 @@ def dvsimulator(argv):
     dvtable = {}
     # setup sockets for read/write
     baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
-    # loopTime = 30
-    loopTime = 1
+    loopTime = 30
     global f
 
-    fName = "output" + SelfName + "Test2" + ".txt "
-    if poption:
-        fName = 'P' + fName
+    fName = tesetDirName + " " + routerName + " p" + str(poption) + ".txt"
     f = open(fName, "w")
     f.write( tesetDirName + " " + routerName + " " + str(poption) + "\n")
     while 1:
