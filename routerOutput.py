@@ -102,10 +102,11 @@ def dvsimulator(argv):
     loopTime = 1
     global f
 
-    fName = "output" + SelfName + ".txt "
+    fName = "output" + SelfName + "Test2" + ".txt "
     if poption:
         fName = 'P' + fName
     f = open(fName, "w")
+    f.write( tesetDirName + " " + routerName + " " + str(poption) + "\n")
     while 1:
         start = time.time()
         baseList = list(baseDict.values())
@@ -119,8 +120,7 @@ def dvsimulator(argv):
             readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict)
         # send update messages to neighbor sockets
         sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict)
-        # print the DV Table
-        PrintDVTable()
+        
         # timer to loop every 30 seconds
         end = time.time()
         t = loopTime - end + start
@@ -140,14 +140,12 @@ def readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict):
         if sockDict[rName] in rReady:
             msg = recieve(sockDict[rName])
             if len(msg) > 0:
-                f.write('Recv MSG ' + rName + ' : ' + msg + "\n")
                 DVUpdateMessage(rName, msg)
     # read from baseport sockets
     for rName in baseDict:
         if baseDict[rName] in rReady:
             msg = recieve(baseDict[rName])
             if len(msg) > 0:
-                f.write('Recv MSG ' + rName + ' : ' + msg + "\n")
                 DVUpdateMessage(rName, msg)
 
 # send DVTable update message to neighbors
@@ -157,7 +155,6 @@ def sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict):
             message = BuildUMessagePoison(rName)
         else:
             message = BuildUMessage()
-        f.write('Send To ' + rName + ' : ' + message + "\n")
         sockDict[rName].send(message.encode())
         resetSocket(routerName, rtrTable, linkTable, sockDict, rName)
 
@@ -197,16 +194,21 @@ def PrintDVTable():
     f.write("\nPrinting DVTable" + "\n")
     f.write("from " + SelfName + " : ")
     for firstHop in RouterList:
-        f.write("via " + firstHop)
+        f.write(" via " + firstHop)
     f.write("\n")
     # prints start of row
     for dest in RouterList:
-        f.write("to   " + dest)
+        f.write("to   " + dest + " : ")
         # prints each entry in a row
         for firstHop in RouterList:
             cost = DVTable[dest][firstHop]
+            
             if(cost == 64):
-                cost = "INF"
+                cost = " INF"
+            elif cost > 9:
+                cost = "  " + str(DVTable[dest][firstHop])
+            else:
+                cost = "   " + str(DVTable[dest][firstHop])    
             f.write(repr(cost).rjust(5))
         f.write("\n")
     f.write("\n")
@@ -293,6 +295,7 @@ def ParseMessage(Message):
         ParseLMessage(Message)
     # handle P message
     else:
+        PrintDVTable()
         PrintRoutingTable()
 
 # parses L messages
