@@ -7,13 +7,13 @@ def printTables(routerInfo):
     for router in routerInfo.keys():
         endinfo = (routerInfo[router].host, routerInfo[router].baseport)
         msg = 'P'
-        s.sendto(msg, endinfo)
+        s.sendto(msg.encode(), endinfo)
 
 def printTable(router, routerInfo):
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     endinfo = (routerInfo[router].host, routerInfo[router].baseport)
     msg = 'P'
-    s.sendto(msg, endinfo)
+    s.sendto(msg.encode(), endinfo)
 
 
 if __name__=='__main__':

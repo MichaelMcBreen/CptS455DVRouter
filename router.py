@@ -1,16 +1,15 @@
 import string
 import socket
 import sys
-import random
 import select
 import time
 import re
 
-#these are global varibles, yes we know this is bad
-RouterTable = {} #Dictionary of Dictionary
+# these are global varibles, yes we know this is bad
+DVTable = {} # Dictionary of Dictionaries
 RouterList = []
 SelfName = "Not Set"
-PosionReverse = True
+PoisonReverse = True
 
 class RouterInfo:
     def __init__(self, host, baseport):
@@ -24,7 +23,7 @@ class ServSockInfo:
     def __init__(self,socket, baseport):
         self.socket, self.baseport = socket, baseport;    
 
-#provided by Hauser
+# provided by Hauser
 def readrouters(testname):
     f = open(testname+'/routers')
     lines = f.readlines()
@@ -38,7 +37,7 @@ def readrouters(testname):
     f.close()
     return table
 
-#provided by Hauser
+# provided by Hauser
 def readlinks(testname, router):
     f = open(testname+'/'+router+'.cfg')
     lines = f.readlines()
@@ -50,40 +49,38 @@ def readlinks(testname, router):
     f.close()
     return table
 
-#returns info from the socket
+# returns info from the socket
 def recieve(sock):
     return sock.recv(2048).decode()
 
-#a function I use to quickly test
-#Is not called when used by command line
+# a function I use to quickly test
+# Is not called when used by command line
 def main():
     dvsimulator(["router.py", "-p", "test1", "A"])
 
-#builds the inital routerTable
-def BuildTable(rTable, linkTable):
-    for router in rTable:
+# builds the inital DVTable
+def BuildTable(rtrTable, linkTable):
+    # Create Table
+    for router in rtrTable:
         RouterList.append(str(router))
     RouterList.sort()
-    
-    for router in RouterList:
-        row= {}
-        #sets table to all infinate
-        for entry in RouterList:
-            row[entry] = 64
-        RouterTable[router] = row
-    #sets connection to self as 0
-    RouterTable[SelfName][SelfName] = 0
-    #sets inital costs
+    # Initialize table to infinity
+    for dest in RouterList:
+        row = {}
+        for firstHop in RouterList:
+            row[firstHop] = 64
+        DVTable[dest] = row
+    # Sets connection to self as 0
+    DVTable[SelfName][SelfName] = 0
+    # Sets inital costs
     for entry in linkTable:
-        RouterTable[entry][entry] = linkTable[entry].cost
-        
-    PrintRoutingTable(RouterTable)
+        DVTable[entry][entry] = linkTable[entry].cost
 
-#our main simulation
+# main simulation
 def dvsimulator(argv):
     print("staring DV simulator")
     print(argv, len(argv))
-    #if p option
+    # if set proper arguments from argv
     if(len(argv) == 4):
         poption = True
         testDirName = argv[2]
@@ -97,16 +94,14 @@ def dvsimulator(argv):
     global SelfName
 
     SelfName = str(routerName)
-    
+    # load data for router and link tables
     rtrTable = readrouters(testDirName)
     linkTable = readlinks(testDirName,routerName)
+    # initialize DV Table
     BuildTable(rtrTable, linkTable)
     dvtable = {}
-    
-    #open up output file to log
-    f = open("output" + routerName + ".txt", 'w')
+    # setup sockets for read/write
     baseDict, sockDict = setupSockets(routerName, rtrTable, linkTable)
-    
     # loopTime = 30
     loopTime = 10
     while 1:
@@ -114,22 +109,16 @@ def dvsimulator(argv):
         baseList = list(baseDict.values())
         sockList = list(sockDict.values())
         rReady, wReady, eReady = select.select(baseList + sockList, sockList, sockList, loopTime)
-        
         # timeout no sockets to read from
         if len(rReady) == 0:
             print ("Timeout Error: No available sockets")
         else:
             # read update messages from baseport and neighbor sockets
             readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict)
-
         # send update messages to neighbor sockets
         sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict)
-
-        
-        PrintRoutingTable(RouterTable)
-    
-
-
+        # print the DV Table
+        PrintDVTable()
         # timer to loop every 30 seconds
         end = time.time()
         t = loopTime - end + start
@@ -139,7 +128,6 @@ def dvsimulator(argv):
             rReady, wReady, eReady = select.select(baseList, baseList, baseList)
             if len(rReady) > 0:
                 break
-
             t = t - 1
     f.close()
 
@@ -164,7 +152,7 @@ def readUpdates(routerName, rReady, rtrTable, linkTable, baseDict, sockDict):
 def sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict):
     for rName in sockDict:
         if poption:
-            message = BuildUMessagePosion(rName)
+            message = BuildUMessagePoison(rName)
         else:
             message = BuildUMessage()
         print('Send To ', rName, ' : ', message)
@@ -173,31 +161,27 @@ def sendUpdates(routerName, poption, rtrTable, linkTable, baseDict, sockDict):
 
 # setup sockets
 def setupSockets(localName, rtrTable, linkTable):
-    #initalize address_in/out, unconnected inputs/ output dictionaries
+    # initalize address_in/out, unconnected inputs/ output dictionaries
     print('-----inside setup_sockets()')
     sockDict = {}
     baseDict = {}
-
     # setup baseport
     bFD = rtrTable[localName].baseport
     bSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    #bSocket.setblocking(False)
     bSocket.bind((rtrTable[localName].host, bFD))
     baseDict[localName] = bSocket
-
     # setup neighbors
     for remoteName in linkTable:
         # router's base + locallink
         iFD = rtrTable[localName].baseport + linkTable[remoteName].locallink
         oFD = rtrTable[remoteName].baseport + linkTable[remoteName].remotelink
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        #s.setblocking(False)
         s.bind((rtrTable[localName].host, iFD))
         s.connect((rtrTable[remoteName].host, oFD))
         sockDict[remoteName] = s        
     return  baseDict, sockDict
 
-#resets socket
+# resets socket by closing then creating a new socket
 def resetSocket(localName, rtrTable, linkTable, sockDict, sockName):
     iFD = rtrTable[localName].baseport + linkTable[sockName].locallink
     oFD = rtrTable[sockName].baseport + linkTable[sockName].remotelink
@@ -206,117 +190,114 @@ def resetSocket(localName, rtrTable, linkTable, sockDict, sockName):
     sockDict[sockName].bind((rtrTable[localName].host, iFD))
     sockDict[sockName].connect((rtrTable[sockName].host, oFD))
 
-#prints out the FD list
-def printFDList(socketDict, servSock):
-    print("printing sockets")
-    for entry in socketDict:
-        print(entry, servSock[entry])
-
-#prints out the routing table
-def PrintRoutingTable(Table):
-    ##prints top label for table
-    print("Printing Table")
+# prints out the DV Table
+def PrintDVTable():
+    # prints top first hop column labels for table
+    print("\nPrinting DVTable")
     print("from", SelfName,":", end=" ")
-    for routerName in RouterList:
-        print("via" , routerName, end="  ")
+    for firstHop in RouterList:
+        print("via" , firstHop, end="  ")
     print()
-    "prints start of row"
-    for routerName in RouterList:
-        print("to  ", routerName, end= " :  ")
-        #prints each entry in a row
-        for entry in RouterList:
-            printedCost = Table[routerName][entry]
-            if(printedCost == 64):
-                printedCost = "INF"
-            print(repr(printedCost).rjust(5), end="  ")
+    # prints start of row
+    for dest in RouterList:
+        print("to  ", dest, end= " :  ")
+        # prints each entry in a row
+        for firstHop in RouterList:
+            cost = DVTable[dest][firstHop]
+            if(cost == 64):
+                cost = "INF"
+            print(repr(cost).rjust(5), end="  ")
         print()
+    print()
 
-#updates routing table from received update
+# prints out the routing table
+def PrintRoutingTable():
+    print("\nPrinting Routing Table")
+    for dest in DVTable:
+        leastCost = 64
+        firstHop = SelfName
+        # print each row of routing table
+        for nextHop in DVTable[dest]:
+            if leastCost > DVTable[dest][nextHop]:
+                leastCost = DVTable[dest][nextHop]
+                firstHop = nextHop
+        PrintLinkChanges(dest, leastCost, firstHop)
+    print()
+
+# prints a routing table entry
+def PrintLinkChanges(dest, cost, nexthop):
+    print(SelfName, "- dest:", dest, "cost:", cost, "nexthop:",nexthop)
+
+# updates DV Table with message received from router From
 def DVUpdateMessage(From, Message):
-    
+    # handle U messages
     if Message[0] == "U":
-        #changesMade = False
         Updates = Message.split(" ")
-        #remove the 'U'
+        # remove the 'U'
         Updates = Updates[1:len(Updates)]
         Values = {}
+        # load each update into router and cost
         for i in range(0,int(len(Updates)/2)):
-            #load each update into router and cost
             Values[Updates[2*i]] = int(Updates[2*i + 1])
-        for rows in RouterList:
-            #Update the from collumn
-            #Sets to row from From to the lowest cost to get to From + cost from From to
-            currentValue = RouterTable[rows][From]
-            RouterTable[rows][From] = RouterTable[From][From] + Values[rows]
-            if(RouterTable[rows][From] > 64):
-                RouterTable[rows][From] = 64
-            if(RouterTable[rows][From] != currentValue):
-                PrintLinkChanges(rows,RouterTable[rows][From],From)
+        # Update the from column
+        for dest in RouterList:
+            currentValue = DVTable[dest][From]
+            # Sets to row from From to the lowest cost to get to From + cost from From to
+            DVTable[dest][From] = DVTable[From][From] + Values[dest]
+            # costs above 64 are set back to 64 for infinity
+            if(DVTable[dest][From] > 64):
+                DVTable[dest][From] = 64
+            if(DVTable[dest][From] != currentValue):
+                PrintLinkChanges(dest, DVTable[dest][From], From)
+    # handle L and P messages
     else:
         ParseMessage(Message)
 
-#gets the lowest cost to a router
-def GetLowestCostForRouter(Router):
+# gets the lowest cost to a router
+def GetLowestCostForRouter(dest):
     lowestCost = 64
-    for entry in RouterTable[Router]:
-        if(RouterTable[Router][entry] < lowestCost):
-            lowestCost = RouterTable[Router][entry]
+    for firstHop in DVTable[dest]:
+        if(DVTable[dest][firstHop] < lowestCost):
+            lowestCost = DVTable[dest][firstHop]
     return lowestCost
 
-#build a regulay U message
+# build a regular U message
 def BuildUMessage():
     Message = "U"
-    for entry in RouterList:
-        Message = Message + " " + entry + " " + str(GetLowestCostForRouter(entry))
+    for dest in RouterList:
+        Message = Message + " " + dest + " " + str(GetLowestCostForRouter(dest))
     return Message
 
-#If we must go through another router to get to the destination we tell that router
-#that we have an infinate cost to get to it
-def BuildUMessagePosion(router):
+# If we must go through another router to get to the destination we tell that neighbor
+# that we have an infinate cost to get to it
+def BuildUMessagePoison(firstHop):
     Message = "U"
-    for entry in RouterList:
-        #if the lowest cost to get to a another router than we say it cost infinate
-        if(entry != router and GetLowestCostForRouter(entry) == RouterTable[entry][router]):
-            Message = Message + " " + entry + " " + str(64)
+    for dest in RouterList:
+        # if the lowest cost to get to a another router than we say it cost infinate
+        if(dest != firstHop and GetLowestCostForRouter(dest) == DVTable[dest][firstHop]):
+            Message = Message + " " + dest + " " + str(64)
         else:
-            Message = Message + " " + entry + " " + str(GetLowestCostForRouter(entry))
+            Message = Message + " " + dest + " " + str(GetLowestCostForRouter(dest))
     return Message
 
-#parses incoming messages to base router  
+# parses incoming messages to base router  
 def ParseMessage(Message):
-    MessageType = Message[0]
-    if(MessageType == "L"):
+    msgType = Message[0]
+    # handle L message
+    if(msgType == "L"):
         ParseLMessage(Message)
+    # handle P message
     else:
-        ParsePMessage(Message)
+        PrintRoutingTable()
 
-#parses L messages
+# parses L messages
 def ParseLMessage(Message):
-    print("Incoming L message: ", Message)
     parts = Message.split(" ")
-    currentValue = RouterTable[parts[1]][parts[1]]
-    RouterTable[parts[1]][parts[1]] = int(parts[2])
-    if(currentValue != RouterTable[parts[1]][parts[1]]):
-        PrintLinkChanges(parts[1],RouterTable[parts[1]][parts[1]],parts[1])
+    currentValue = DVTable[parts[1]][parts[1]]
+    DVTable[parts[1]][parts[1]] = int(parts[2])
+    if(currentValue != DVTable[parts[1]][parts[1]]):
+        PrintLinkChanges(parts[1], DVTable[parts[1]][parts[1]], parts[1])
 
-#parses P messages
-def ParsePMessage(Message):
-    print("Income P Message")
-    if(len(Message) == 1):
-        PrintRoutingTable(RouterTable)
-    else:
-        PrintDestination(Message[2])
-
-#prints out the Destination        
-def PrintDestination(Destination):
-    print("Printing Entries for Destination: ", Destination, end=" ")
-    for entry in RouterList:
-        print(entry,RouterTable[Destination][entry], end=" ")
-    print()
-
-def PrintLinkChanges(dest, cost, nexthop):
-    print(SelfName, " - dest:", dest, " cost:", cost, " nexthop:",nexthop)
-
-#Calls DVSimulator with cmd argv
+# Calls DVSimulator with cmd argv
 dvsimulator(sys.argv)
     
